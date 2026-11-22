@@ -1,18 +1,28 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetOrderById } from "@/lib/admin/mongo-store";
 import { updateOrderStatus } from "@/app/admin/actions";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Order Detail | Admin" };
+
+export const instant = false;
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminOrderDetailPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: order } = await supabase.from("orders").select("*, profiles(full_name,email,phone), customer_addresses(*)").eq("id", id).maybeSingle();
+  let order: any = null; let items: any[] = [];
+  if (isMongoConfigured()) {
+    const res = await mongoGetOrderById(id);
+    order = res?.order ?? null;
+    items = res?.items ?? [];
+  } else {
+    const d = readDemoDB();
+    order = d.orders.find((o) => o.id === id) ?? null;
+    items = d.orderItems.filter((i) => i.order_id === id);
+  }
   if (!order) notFound();
-  const { data: items } = await supabase.from("order_items").select("*").eq("order_id", id);
 
   return (
     <div className="space-y-8">

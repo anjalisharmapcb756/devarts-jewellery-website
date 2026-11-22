@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { AccountDashboard } from "@/components/account/account-dashboard";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Account",
   description: "Manage your profile, orders, and saved addresses.",

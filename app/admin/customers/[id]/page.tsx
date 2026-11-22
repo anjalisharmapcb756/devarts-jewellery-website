@@ -1,20 +1,27 @@
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetCustomerById } from "@/lib/admin/mongo-store";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Customer Detail | Admin" };
+
+export const instant = false;
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminCustomerDetailPage({ params }: Props) {
   const { id } = await params;
-  const supabase = await createClient();
-  const [{ data: customer }, { data: orders }, { data: addresses }] = await Promise.all([
-    supabase.from("profiles").select("*").eq("id", id).maybeSingle(),
-    supabase.from("orders").select("id, order_number, status, payment_status, total_inr, placed_at").eq("user_id", id).order("placed_at", { ascending: false }),
-    supabase.from("customer_addresses").select("*").eq("user_id", id).order("created_at", { ascending: false }),
-  ]);
+  let customer: any = null; let orders: any[] = []; let addresses: any[] = [];
+  if (isMongoConfigured()) {
+    const res = await mongoGetCustomerById(id);
+    customer = res?.customer ?? null; orders = res?.orders ?? []; addresses = res?.addresses ?? [];
+  } else {
+    const d = readDemoDB();
+    customer = d.customers.find((c) => c.id === id) ?? null;
+    orders = d.orders.filter((o) => o.user_id === id).sort((a, b) => +new Date(b.placed_at) - +new Date(a.placed_at));
+    addresses = d.addresses.filter((a) => a.user_id === id);
+  }
   if (!customer) notFound();
 
   return (

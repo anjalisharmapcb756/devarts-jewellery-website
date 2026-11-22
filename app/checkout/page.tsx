@@ -1,21 +1,19 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import { Suspense } from "react";
 import { connection } from "next/server";
 import { Container } from "@/components/ui/container";
 import { CheckoutForm } from "@/components/checkout/checkout-form";
 import { getProductsAsync } from "@/lib/data/products-db";
-import { createClient } from "@/lib/supabase/server";
+import { getSession } from "@/lib/auth/session";
 
-export const metadata: Metadata = {
-  title: "Checkout",
-  description: "Complete your Vara jewellery purchase.",
-};
+export const metadata: Metadata = { title: "Checkout", description: "Complete your Vara jewellery purchase." };
+
+export const instant = false;
 
 async function CheckoutContent() {
   await connection();
-  const [products, supabase] = await Promise.all([getProductsAsync(), createClient()]);
-  const { data: { user } } = await supabase.auth.getUser();
-  return <CheckoutForm products={products} initialEmail={user?.email ?? ""} />;
+  const [products, session] = await Promise.all([getProductsAsync(), getSession()]);
+  return <CheckoutForm products={products} initialEmail={session?.email ?? ""} />;
 }
 
 export default function CheckoutPage() {

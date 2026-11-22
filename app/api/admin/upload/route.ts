@@ -1,22 +1,17 @@
-import { NextResponse } from "next/server";
+﻿import { NextResponse } from "next/server";
 import { assertAdmin } from "@/lib/auth/admin";
-import { createClient } from "@/lib/supabase/server";
+import { uploadProductImageFile } from "@/lib/storage";
 
 export async function POST(request: Request) {
   try {
     await assertAdmin();
     const formData = await request.formData();
     const file = formData.get("file");
-    if (!(file instanceof File) || !file.size) {
-      return NextResponse.json({ error: "No file provided" }, { status: 400 });
-    }
-    const supabase = await createClient();
-    const ext = (file.name.split(".").pop() || "jpg").toLowerCase();
-    const path = `products/${Date.now()}-${Math.random().toString(36).slice(2)}.${ext}`;
-    const { error } = await supabase.storage.from("product-images").upload(path, file, { upsert: false, contentType: file.type });
-    if (error) return NextResponse.json({ error: error.message }, { status: 400 });
-    const { data } = supabase.storage.from("product-images").getPublicUrl(path);
-    return NextResponse.json({ url: data.publicUrl });
+    if (!(file instanceof File) || !file.size) return NextResponse.json({ error: "No file provided" }, { status: 400 });
+    if (!file.type.startsWith("image/")) return NextResponse.json({ error: "Only image files are allowed" }, { status: 400 });
+    if (file.size > 8 * 1024 * 1024) return NextResponse.json({ error: "Image must be 8MB or smaller" }, { status: 400 });
+    const result = await uploadProductImageFile(file);
+    return NextResponse.json(result);
   } catch (e: any) {
     const msg = e?.message || "Unauthorized";
     const status = msg.toLowerCase().includes("unauthorized") ? 401 : 500;

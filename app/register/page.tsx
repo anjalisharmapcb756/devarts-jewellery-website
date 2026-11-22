@@ -2,6 +2,8 @@ import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { RegisterForm } from "@/components/auth/register-form";
 
+export const instant = false;
+
 export const metadata: Metadata = {
   title: "Register",
   description: "Create your Vara account.",

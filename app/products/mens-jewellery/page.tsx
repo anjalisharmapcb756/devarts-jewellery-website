@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Bold, refined jewellery crafted for the modern gentleman.",
 };
 
+export const instant = false;
+
 export default async function MensJewelleryPage() {
   const products = await getProductsAsync();
   return (

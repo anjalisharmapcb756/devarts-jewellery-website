@@ -1,36 +1,24 @@
-import { redirect } from "next/navigation";
-import { createClient } from "@/lib/supabase/server";
+﻿import { redirect } from "next/navigation";
+import { connectDB } from "@/lib/mongodb";
+import { User } from "@/lib/models/User";
+import { getSession } from "@/lib/auth/session";
 
 export type AdminProfile = {
   id: string;
   email: string | null;
   role: "admin" | "customer";
   fullName: string | null;
+  isDemo?: boolean;
 };
 
-function isConfigured() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return Boolean(url && key && !url.includes("your-project"));
-}
-
 export async function getAdminProfile(): Promise<AdminProfile | null> {
-  if (!isConfigured()) return null;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) return null;
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("id, email, role, full_name")
-    .eq("id", user.id)
-    .maybeSingle();
-  if (!profile || profile.role !== "admin") return null;
-  return {
-    id: profile.id,
-    email: profile.email ?? user.email ?? null,
-    role: profile.role,
-    fullName: profile.full_name ?? null,
-  };
+  const session = await getSession();
+  if (!session) return null;
+  if (session.role !== "admin") return null;
+  await connectDB();
+  const user = await User.findById(session.sub).lean();
+  if (!user || user.role !== "admin") return null;
+  return { id: String(user._id), email: user.email ?? null, role: "admin", fullName: user.fullName ?? null };
 }
 
 export async function requireAdmin(): Promise<AdminProfile> {

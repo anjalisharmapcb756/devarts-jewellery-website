@@ -6,6 +6,8 @@ import { ProductDetail } from "@/components/products/product-detail";
 import { getProductBySlugAsync, getProductsAsync, getRelatedProductsAsync } from "@/lib/data/products-db";
 import { products as mockProducts } from "@/lib/data/products";
 
+export const instant = false;
+
 type ProductDetailPageProps = {
   params: Promise<{ slug: string }>;
 };

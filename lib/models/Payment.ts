@@ -1,0 +1,5 @@
+﻿import mongoose, { Schema, models } from "mongoose";
+const CouponSchema = new Schema({ code: { type: String, unique: true }, discount_type: String, discount_value: Number, min_order_inr: { type: Number, default: 0 }, max_discount_inr: Number, starts_at: Date, ends_at: Date, usage_limit: Number, used_count: { type: Number, default: 0 }, is_active: { type: Boolean, default: true } }, { timestamps: true });
+export const Coupon = models.Coupon || mongoose.model("Coupon", CouponSchema);
+const PaymentTransactionSchema = new Schema({ order_id: { type: Schema.Types.ObjectId, ref: "Order" }, user_id: String, provider: String, provider_order_id: String, provider_payment_id: String, provider_signature: String, amount_inr: Number, currency: String, status: String, raw_payload: Schema.Types.Mixed }, { timestamps: true });
+export const PaymentTransaction = models.PaymentTransaction || mongoose.model("PaymentTransaction", PaymentTransactionSchema);

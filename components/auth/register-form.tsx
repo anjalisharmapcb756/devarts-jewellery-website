@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useRouter } from "next/navigation";
-import { createClient, isSupabaseConfigured } from "@/lib/supabase/client";
+import { registerAction } from "@/app/auth/actions";
 import { AuthLink } from "@/components/auth/auth-shell";
 
 function validate(name: string, email: string, password: string, confirm: string) {
@@ -23,48 +23,27 @@ export function RegisterForm() {
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
-  const configured = isSupabaseConfigured();
-
   const onSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     setError(null);
     setSuccess(null);
     const validationError = validate(name, email, password, confirm);
-    if (validationError) {
-      setError(validationError);
-      return;
-    }
-    if (!configured) {
-      setError("Supabase is not configured. Add NEXT_PUBLIC_SUPABASE_URL and NEXT_PUBLIC_SUPABASE_ANON_KEY to .env.local.");
-      return;
-    }
+    if (validationError) { setError(validationError); return; }
     setLoading(true);
-    const supabase = createClient();
-    const { data, error: signUpError } = await supabase.auth.signUp({
-      email,
-      password,
-      options: { data: { full_name: name.trim() } },
-    });
+    const fd = new FormData();
+    fd.append("name", name);
+    fd.append("email", email);
+    fd.append("password", password);
+    const result = await registerAction(fd);
     setLoading(false);
-    if (signUpError) {
-      setError(signUpError.message);
-      return;
-    }
-    if (data.session) {
-      router.push("/account");
-      router.refresh();
-      return;
-    }
-    setSuccess("Account created. Please check your email to confirm your account before signing in.");
+    if (result?.error) { setError(result.error); return; }
+    router.push("/account");
+    router.refresh();
   };
 
   return (
     <form onSubmit={onSubmit} className="space-y-5">
-      {!configured ? (
-        <div className="border border-border bg-surface-muted/40 px-4 py-3 text-sm text-muted">
-          Supabase credentials are not configured. Add them to <code>.env.local</code> to enable authentication.
-        </div>
-      ) : null}
+
       {error ? <div className="border border-[#c9a3a3] bg-[#fdf7f7] px-4 py-3 text-sm text-[#7a3d3d]">{error}</div> : null}
       {success ? <div className="border border-[#b8c9b0] bg-[#f5faf3] px-4 py-3 text-sm text-[#3f5a36]">{success}</div> : null}
 

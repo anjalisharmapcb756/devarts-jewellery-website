@@ -1,19 +1,27 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetOrders } from "@/lib/admin/mongo-store";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Orders | Admin" };
+
+export const instant = false;
 
 type Props = { searchParams: Promise<{ q?: string; status?: string }> };
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
   const { q = "", status = "" } = await searchParams;
-  const supabase = await createClient();
-  let query = supabase.from("orders").select("id, order_number, status, payment_status, total_inr, placed_at, profiles(full_name,email)").order("placed_at", { ascending: false }).limit(100);
-  if (status) query = query.eq("status", status);
-  if (q) query = query.or(`order_number.ilike.%${q}%`);
-  const { data: orders } = await query;
+  let orders: any[] = [];
+  if (isMongoConfigured()) {
+    orders = await mongoGetOrders(q, status);
+  } else {
+    const d = readDemoDB();
+    orders = d.orders
+      .filter((o) => (!status || o.status === status) && (!q || (o.order_number || "").toLowerCase().includes(q.toLowerCase())))
+      .sort((a, b) => +new Date(b.placed_at) - +new Date(a.placed_at))
+      .slice(0, 100);
+  }
 
   return (
     <div className="space-y-8">

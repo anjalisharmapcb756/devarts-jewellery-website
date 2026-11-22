@@ -2,6 +2,7 @@
 
 import Link from "next/link";
 import { usePathname } from "next/navigation";
+import { logoutAction } from "@/app/auth/actions";
 
 const nav = [
   { href: "/admin", label: "Dashboard" },
@@ -41,9 +42,11 @@ export function AdminSidebar({ adminName }: { adminName?: string | null }) {
       <div className="border-t border-[#3a3631] px-6 py-5">
         <p className="text-xs tracking-[0.14em] text-[#a89f95] uppercase">Signed in</p>
         <p className="mt-1 truncate text-sm text-[#efe7dc]">{adminName || "Administrator"}</p>
-        <div className="mt-4 flex gap-4 text-xs tracking-[0.12em] uppercase">
+        <div className="mt-4 flex items-center gap-4 text-xs tracking-[0.12em] uppercase">
           <Link href="/" className="text-[#c9b28a] hover:text-white">View Store</Link>
-          <Link href="/account" className="text-[#a89f95] hover:text-white">Account</Link>
+          <form action={logoutAction}>
+            <button type="submit" className="text-[#a89f95] hover:text-white uppercase tracking-[0.12em]">Sign out</button>
+          </form>
         </div>
       </div>
     </aside>

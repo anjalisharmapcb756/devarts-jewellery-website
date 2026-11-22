@@ -9,6 +9,8 @@ import { NewsletterSection } from "@/components/home/newsletter-section";
 import { TestimonialsSection } from "@/components/home/testimonials-section";
 import { WhyChooseUsSection } from "@/components/home/why-choose-us-section";
 
+export const instant = false;
+
 export default function HomePage() {
   return (
     <>

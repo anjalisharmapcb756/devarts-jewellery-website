@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetGemstones } from "@/lib/admin/mongo-store";
 import { deleteGemstone, upsertGemstone } from "@/app/admin/actions";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 
 export const metadata: Metadata = { title: "Gemstones | Admin" };
 
+export const instant = false;
+
 export default async function AdminGemstonesPage() {
-  const supabase = await createClient();
-  const { data: items } = await supabase.from("gemstones").select("*").order("name");
+  let items: any[] = [];
+  if (isMongoConfigured()) {
+    items = await mongoGetGemstones();
+  } else {
+    items = [...readDemoDB().gemstones].sort((a, b) => a.name.localeCompare(b.name));
+  }
   return (
     <div className="space-y-8">
       <div><p className="text-[11px] font-medium tracking-[0.28em] text-[#8a7453] uppercase">Catalogue</p><h1 className="mt-2 font-display text-4xl text-[#292521]">Gemstones</h1></div>

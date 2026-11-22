@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Discover diamond, gemstone, and gold rings crafted for timeless elegance.",
 };
 
+export const instant = false;
+
 export default async function RingsPage() {
   const products = await getProductsAsync();
   return (

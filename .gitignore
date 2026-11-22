@@ -48,3 +48,6 @@ AGENTS.md
 # typescript
 *.tsbuildinfo
 next-env.d.ts
+
+.data/
+public/uploads/

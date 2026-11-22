@@ -108,4 +108,8 @@ export const mainNavigation: NavItem[] = [
     label: "Collections",
     href: "/collections",
   },
+  {
+    label: "Gallery",
+    href: "/gallery",
+  },
 ];

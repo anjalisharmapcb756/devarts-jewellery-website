@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Review your selected jewellery pieces.",
 };
 
+export const instant = false;
+
 export default async function CartPage() {
   const products = await getProductsAsync();
   return (

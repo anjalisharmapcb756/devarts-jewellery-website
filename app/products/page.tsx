@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Browse our complete luxury jewellery catalogue.",
 };
 
+export const instant = false;
+
 type ProductsPageProps = {
   searchParams: Promise<{ q?: string; category?: string }>;
 };

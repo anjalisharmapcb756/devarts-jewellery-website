@@ -1,16 +1,25 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetCustomers } from "@/lib/admin/mongo-store";
 
 export const metadata: Metadata = { title: "Customers | Admin" };
+
+export const instant = false;
 type Props = { searchParams: Promise<{ q?: string }> };
 
 export default async function AdminCustomersPage({ searchParams }: Props) {
   const { q = "" } = await searchParams;
-  const supabase = await createClient();
-  let query = supabase.from("profiles").select("id, full_name, email, phone, role, created_at").eq("role", "customer").order("created_at", { ascending: false }).limit(100);
-  if (q) query = query.or(`full_name.ilike.%${q}%,email.ilike.%${q}%`);
-  const { data: customers } = await query;
+  let customers: any[] = [];
+  if (isMongoConfigured()) {
+    customers = await mongoGetCustomers(q);
+  } else {
+    const d = readDemoDB();
+    customers = d.customers
+      .filter((c) => !q || (c.full_name || "").toLowerCase().includes(q.toLowerCase()) || (c.email || "").toLowerCase().includes(q.toLowerCase()))
+      .sort((a, b) => +new Date(b.created_at || 0) - +new Date(a.created_at || 0))
+      .slice(0, 100);
+  }
 
   return (
     <div className="space-y-8">

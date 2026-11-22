@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Celebrate your promise with engagement rings designed to last forever.",
 };
 
+export const instant = false;
+
 export default async function EngagementRingsPage() {
   const products = await getProductsAsync();
   return (

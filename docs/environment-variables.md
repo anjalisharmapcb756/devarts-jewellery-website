@@ -1,36 +1,51 @@
-# Environment Variables (Vara)
+﻿# Environment Variables (Vara)
 
-Create `.env.local` in the project root for local development. In Vercel, add these in **Project Settings > Environment Variables**. Never commit real secrets.
+Create `.env.local` for local development. In production, set variables in your hosting provider's environment settings. **Never commit real secrets.**
 
-## Public (safe for browser)
+## Next.js app (website + admin)
 
-| Variable | Required | Description | Example |
-|---|---|---|---|
-| `NEXT_PUBLIC_SUPABASE_URL` | Yes | Supabase project URL | `https://xxxx.supabase.co` |
-| `NEXT_PUBLIC_SUPABASE_ANON_KEY` | Yes | Supabase anon/public key (RLS still applies) | `eyJ...` |
-| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Yes for checkout | Razorpay public key. Use `rzp_test_...` in test mode | `rzp_test_xxxxxxxxxxxxx` |
-| `NEXT_PUBLIC_SITE_URL` | Recommended | Canonical site URL for SEO/sitemap/robots/OG | `https://your-domain.com` |
+### Server-only (NEVER expose to client)
 
-## Server-only (NEVER expose to client)
+| Variable | Required | Description |
+|---|---|---|
+| `MONGODB_URI` | Yes | MongoDB connection string (use least-privilege user in production) |
+| `AUTH_SECRET` | Yes | Long random secret for JWT signing (>= 32 chars) |
+| `RAZORPAY_KEY_ID` | Yes for checkout | Razorpay server key ID (`rzp_test_...` for test, live key only after verification) |
+| `RAZORPAY_KEY_SECRET` | Yes for checkout | Razorpay server secret |
 
-| Variable | Required | Description | Example |
-|---|---|---|---|
-| `SUPABASE_SERVICE_ROLE_KEY` | Recommended | Supabase service role key for trusted server-side order/stock/admin operations. Bypasses RLS - use only in server code. | `eyJ...` |
-| `RAZORPAY_KEY_ID` | Yes for checkout | Razorpay key ID for server API calls | `rzp_test_xxxxxxxxxxxxx` |
-| `RAZORPAY_KEY_SECRET` | Yes for checkout | Razorpay secret for order creation/signature verification. **Secret**. | `xxxxxxxx` |
+### Public (safe for browser)
 
-## Security Rules
+| Variable | Required | Description |
+|---|---|---|
+| `NEXT_PUBLIC_RAZORPAY_KEY_ID` | Yes for checkout | Razorpay public key ID |
+| `NEXT_PUBLIC_SITE_URL` | Recommended | Canonical production URL, e.g. `https://your-domain.com` |
+| `NEXT_PUBLIC_APP_URL` | Recommended | App base URL; used as fallback for reset links |
+| `NEXT_PUBLIC_ADMIN_API_URL` | Optional | Base URL for separate Express admin backend, if deployed |
+
+### Seed script only (do not commit real values)
+
+| Variable | Required | Description |
+|---|---|---|
+| `SEED_ADMIN_EMAIL` | For seed | Initial admin email |
+| `SEED_ADMIN_PASSWORD` | For seed | Initial admin password (strong) |
+| `SEED_ADMIN_NAME` | Optional | Initial admin display name |
+
+## Express admin backend (`backend/`)
+
+| Variable | Required | Description |
+|---|---|---|
+| `PORT` | Platform-provided | Server port (hosting platform usually injects) |
+| `NODE_ENV` | Yes | `production` in production |
+| `MONGODB_URI` | Yes | MongoDB connection string |
+| `CORS_ORIGINS` | Yes | Comma-separated allowed origins, e.g. `https://your-domain.com` |
+| `ADMIN_JWT_SECRET` | Yes | Long random secret (>= 16 chars) |
+| `SEED_ADMIN_EMAIL` | For seed | First admin email |
+| `SEED_ADMIN_PASSWORD` | For seed | First admin password |
+
+## Security rules
 
 - Do **not** prefix secrets with `NEXT_PUBLIC_`.
-- Do **not** commit `.env.local` or real credentials.
-- Use Razorpay **test** keys until the full test flow is verified; only then switch to live keys.
-- `SUPABASE_SERVICE_ROLE_KEY` must only be used in server routes/actions/server modules.
-- Rotate keys immediately if exposed.
-
-## Vercel Setup
-
-1. Import the Git repository into Vercel.
-2. Add all required env vars for Production/Preview/Development as needed.
-3. Build command: `npm run build` (uses `next build --webpack` in this repo; compatible with Vercel). Output: default Next.js.
-4. Ensure Supabase URL/keys and Razorpay test keys are configured before testing checkout.
-5. Set `NEXT_PUBLIC_SITE_URL` to the deployed domain for correct sitemap/robots/canonical URLs.
+- Do **not** commit `.env.local`, `.env`, or real credentials.
+- Rotate credentials immediately if exposed.
+- Use Razorpay test keys until the full test flow is verified.
+- Use HTTPS in production; set secure cookies by running with `NODE_ENV=production`.

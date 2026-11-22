@@ -1,12 +1,16 @@
 import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Container } from "@/components/ui/container";
+
+export const instant = false;
 
 export const metadata: Metadata = {
   title: "Collections",
   description: "Discover curated jewellery collections.",
 };
 
-export default function CollectionsPage() {
+export default async function CollectionsPage() {
+  await connection();
   return (
     <section className="py-16 sm:py-24">
       <Container>

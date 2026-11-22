@@ -6,6 +6,7 @@ import {
   useContext,
   useEffect,
   useMemo,
+  useRef,
   useState,
   type ReactNode,
 } from "react";
@@ -102,6 +103,8 @@ export function StoreProvider({ children, initialProducts }: { children: ReactNo
   const [wishlist, setWishlist] = useState<string[]>([]);
   const [cart, setCart] = useState<CartItem[]>([]);
   const [isLoaded, setIsLoaded] = useState(false);
+  const authedRef = useRef(false);
+  const dbSyncedRef = useRef(false);
 
   useEffect(() => {
     const legacyCart = "aurea-cart";
@@ -149,12 +152,39 @@ export function StoreProvider({ children, initialProducts }: { children: ReactNo
   useEffect(() => {
     if (!isLoaded) return;
     window.localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
+    if (authedRef.current && dbSyncedRef.current) fetch("/api/wishlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: wishlist }) }).catch(() => {});
   }, [wishlist, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
     window.localStorage.setItem(CART_KEY, JSON.stringify(cart));
+    if (authedRef.current && dbSyncedRef.current) fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: cart }) }).catch(() => {});
   }, [cart, isLoaded]);
+
+  useEffect(() => {
+    if (!isLoaded || dbSyncedRef.current) return;
+    (async () => {
+      try {
+        const me = await fetch("/api/auth/me", { cache: "no-store" });
+        if (!me.ok) { dbSyncedRef.current = true; return; }
+        authedRef.current = true;
+        const [cRes, wRes] = await Promise.all([fetch("/api/cart", { cache: "no-store" }), fetch("/api/wishlist", { cache: "no-store" })]);
+        if (cRes.ok) {
+          const cData = await cRes.json();
+          const dbCart = Array.isArray(cData.items) ? cData.items : [];
+          if (dbCart.length > 0) setCart(dbCart as CartItem[]);
+          else if (cart.length > 0) await fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: cart }) });
+        }
+        if (wRes.ok) {
+          const wData = await wRes.json();
+          const dbW = Array.isArray(wData.items) ? wData.items : [];
+          if (dbW.length > 0) setWishlist(dbW as string[]);
+          else if (wishlist.length > 0) await fetch("/api/wishlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: wishlist }) });
+        }
+      } catch {}
+      dbSyncedRef.current = true;
+    })();
+  }, [isLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const toggleWishlist = useCallback((id: string) => {
     setWishlist((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));

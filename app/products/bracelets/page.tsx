@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Refined bracelets and cuffs crafted with exceptional detail.",
 };
 
+export const instant = false;
+
 export default async function BraceletsPage() {
   const products = await getProductsAsync();
   return (

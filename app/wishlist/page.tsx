@@ -8,6 +8,8 @@ export const metadata: Metadata = {
   description: "Save your favourite jewellery pieces.",
 };
 
+export const instant = false;
+
 export default async function WishlistPage() {
   const products = await getProductsAsync();
   return (

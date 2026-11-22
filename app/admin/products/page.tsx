@@ -1,20 +1,30 @@
 import type { Metadata } from "next";
 import Link from "next/link";
-import { createClient } from "@/lib/supabase/server";
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetProducts } from "@/lib/admin/mongo-store";
 import { deleteProduct } from "@/app/admin/actions";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = { title: "Products | Admin" };
 
+export const instant = false;
+
 type Props = { searchParams: Promise<{ q?: string }> };
 
 export default async function AdminProductsPage({ searchParams }: Props) {
   const { q = "" } = await searchParams;
-  const supabase = await createClient();
-  let query = supabase.from("products").select("id, name, slug, price_inr, stock_quantity, is_in_stock, is_active, badge, categories(name)").order("created_at", { ascending: false }).limit(100);
-  if (q) query = query.ilike("name", `%${q}%`);
-  const { data: products } = await query;
+  let products: any[] = [];
+  if (isMongoConfigured()) {
+    products = await mongoGetProducts(q);
+  } else {
+    const d = readDemoDB();
+    products = d.products
+      .filter((p) => !q || p.name.toLowerCase().includes(q.toLowerCase()))
+      .sort((a, b) => +new Date(b.created_at || 0) - +new Date(a.created_at || 0))
+      .slice(0, 100)
+      .map((p) => ({ ...p, categories: { name: d.categories.find((c) => c.id === p.category_id)?.name || "—" } }));
+  }
 
   return (
     <div className="space-y-8">

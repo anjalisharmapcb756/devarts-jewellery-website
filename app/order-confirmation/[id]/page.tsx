@@ -1,11 +1,15 @@
-import type { Metadata } from "next";
+﻿import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
 import { Suspense } from "react";
 import { Container } from "@/components/ui/container";
-import { createClient } from "@/lib/supabase/server";
+import { getSession } from "@/lib/auth/session";
+import { connectDB } from "@/lib/mongodb";
+import { Order, OrderItem } from "@/lib/models/Order";
 import { formatCurrency } from "@/lib/utils";
+
+export const instant = false;
 
 export const metadata: Metadata = { title: "Order Confirmation" };
 type Props = { params: Promise<{ id: string }> };
@@ -13,14 +17,14 @@ type Props = { params: Promise<{ id: string }> };
 async function OrderConfirmationContent({ params }: Props) {
   await connection();
   const { id } = await params;
-  const supabase = await createClient();
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect(`/login?next=/order-confirmation/${id}`);
-
-  const { data: order } = await supabase.from("orders").select("*, order_items(*)").eq("id", id).maybeSingle();
-  if (!order || order.user_id !== user.id) notFound();
-
+  const session = await getSession();
+  if (!session) redirect(`/login?next=/order-confirmation/${id}`);
+  await connectDB();
+  const order: any = await Order.findById(id).lean().catch(() => null);
+  if (!order || String(order.user_id) !== String(session.sub)) notFound();
+  const items = await OrderItem.find({ order_id: order._id }).lean();
   const addr = order.shipping_address_snapshot as any;
+
   return (
     <div className="mt-10 grid gap-8 lg:grid-cols-[1fr_360px]">
       <div className="space-y-6">
@@ -30,15 +34,14 @@ async function OrderConfirmationContent({ params }: Props) {
             <div><dt className="text-muted uppercase tracking-[0.12em] text-[11px]">Order Number</dt><dd className="text-foreground">{order.order_number}</dd></div>
             <div><dt className="text-muted uppercase tracking-[0.12em] text-[11px]">Order Status</dt><dd className="text-foreground capitalize">{order.status}</dd></div>
             <div><dt className="text-muted uppercase tracking-[0.12em] text-[11px]">Payment Status</dt><dd className="text-foreground capitalize">{order.payment_status}</dd></div>
-            <div><dt className="text-muted uppercase tracking-[0.12em] text-[11px]">Date</dt><dd className="text-foreground">{new Date(order.placed_at).toLocaleDateString("en-IN")}</dd></div>
+            <div><dt className="text-muted uppercase tracking-[0.12em] text-[11px]">Date</dt><dd className="text-foreground">{new Date(order.placed_at || order.createdAt).toLocaleDateString("en-IN")}</dd></div>
           </dl>
         </div>
-
         <div className="border border-border bg-surface p-6">
           <h2 className="font-display text-2xl text-foreground">Items</h2>
           <div className="mt-4 space-y-4">
-            {(order.order_items ?? []).map((item: any) => (
-              <div key={item.id} className="flex justify-between gap-4 border-b border-border pb-4 text-sm">
+            {(items as any[]).map((item: any) => (
+              <div key={String(item._id)} className="flex justify-between gap-4 border-b border-border pb-4 text-sm">
                 <div>
                   <p className="text-foreground">{item.product_name}</p>
                   <p className="text-muted">{[item.metal, item.gemstone, item.gemstone_size, item.ring_size].filter(Boolean).join(" / ")}</p>
@@ -49,13 +52,11 @@ async function OrderConfirmationContent({ params }: Props) {
             ))}
           </div>
         </div>
-
         <div className="border border-border bg-surface p-6">
           <h2 className="font-display text-2xl text-foreground">Shipping Address</h2>
           {addr ? <p className="mt-4 text-sm leading-7 text-muted">{addr.fullName}<br />{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}<br />{addr.city}, {addr.state} {addr.postalCode}<br />{addr.country || "India"}<br />{addr.phone}</p> : <p className="mt-4 text-sm text-muted">—</p>}
         </div>
       </div>
-
       <aside className="h-fit border border-border bg-surface-muted/30 p-6">
         <h2 className="font-display text-2xl text-foreground">Payment Summary</h2>
         <div className="mt-4 space-y-3 text-sm">

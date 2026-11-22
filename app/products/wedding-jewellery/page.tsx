@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "Heirloom-worthy wedding jewellery for your most unforgettable moments.",
 };
 
+export const instant = false;
+
 export default async function WeddingJewelleryPage() {
   const products = await getProductsAsync();
   return (

@@ -2,7 +2,9 @@ import type { Metadata } from "next";
 import Link from "next/link";
 import { StatCard } from "@/components/admin/stat-card";
 import { SalesChart } from "@/components/admin/sales-chart";
-import { createClient } from "@/lib/supabase/server";
+// settings moved to /admin/settings
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetCustomers, mongoGetOrders, mongoGetProducts } from "@/lib/admin/mongo-store";
 import { formatCurrency } from "@/lib/utils";
 
 export const metadata: Metadata = {
@@ -10,11 +12,7 @@ export const metadata: Metadata = {
   description: "Manage products, orders, and store content.",
 };
 
-function isConfigured() {
-  const url = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
-  return Boolean(url && key && !url.includes("your-project"));
-}
+export const instant = false;
 
 function monthLabel(d: Date) {
   return d.toLocaleString("en-US", { month: "short" });
@@ -28,40 +26,32 @@ export default async function AdminDashboardPage() {
   let recentOrders: any[] = [];
   let sales: { label: string; value: number }[] = [];
 
-  if (isConfigured()) {
+  if (isMongoConfigured()) {
     try {
-      const supabase = await createClient();
-      const [ordersRes, productsRes, customersRes, recentRes, salesRes] = await Promise.all([
-        supabase.from("orders").select("total_inr"),
-        supabase.from("products").select("id", { count: "exact", head: true }),
-        supabase.from("profiles").select("id", { count: "exact", head: true }).eq("role", "customer"),
-        supabase.from("orders").select("id, order_number, status, payment_status, total_inr, placed_at, profiles:profiles(full_name,email)").order("placed_at", { ascending: false }).limit(6),
-        supabase.from("orders").select("total_inr, placed_at").gte("placed_at", new Date(Date.now() - 180 * 24 * 60 * 60 * 1000).toISOString()),
-      ]);
-
-      const orders = ordersRes.data ?? [];
+      const [orders, prods, customers] = await Promise.all([mongoGetOrders("", ""), mongoGetProducts(""), mongoGetCustomers("")]);
       totalOrders = orders.length;
-      totalRevenue = orders.reduce((sum, o) => sum + Number(o.total_inr ?? 0), 0);
-      totalProducts = productsRes.count ?? 0;
-      totalCustomers = customersRes.count ?? 0;
-      recentOrders = recentRes.data ?? [];
-
+      totalRevenue = orders.reduce((sum: number, o: any) => sum + Number(o.total_inr ?? 0), 0);
+      totalProducts = prods.length;
+      totalCustomers = customers.length;
+      recentOrders = orders.slice(0, 6);
       const buckets: { label: string; value: number }[] = [];
       const now = new Date();
-      for (let i = 5; i >= 0; i--) {
-        const d = new Date(now.getFullYear(), now.getMonth() - i, 1);
-        buckets.push({ label: monthLabel(d), value: 0 });
-      }
-      for (const o of salesRes.data ?? []) {
-        const d = new Date(o.placed_at);
-        const label = monthLabel(d);
-        const bucket = buckets.find((b) => b.label === label);
-        if (bucket) bucket.value += Number(o.total_inr ?? 0);
-      }
+      for (let i = 5; i >= 0; i--) { const dt = new Date(now.getFullYear(), now.getMonth() - i, 1); buckets.push({ label: monthLabel(dt), value: 0 }); }
+      for (const o of orders) { const dt = new Date(o.placed_at || o.createdAt || Date.now()); const bucket = buckets.find((b) => b.label === monthLabel(dt)); if (bucket) bucket.value += Number(o.total_inr ?? 0); }
       sales = buckets;
-    } catch {
-      // Keep defaults; dashboard shows empty state.
-    }
+    } catch {}
+  } else {
+    const d = readDemoDB();
+    totalOrders = d.orders.length;
+    totalRevenue = d.orders.reduce((sum, o) => sum + Number(o.total_inr ?? 0), 0);
+    totalProducts = d.products.length;
+    totalCustomers = d.customers.length;
+    recentOrders = [...d.orders].sort((a, b) => +new Date(b.placed_at) - +new Date(a.placed_at)).slice(0, 6);
+    const buckets: { label: string; value: number }[] = [];
+    const now = new Date();
+    for (let i = 5; i >= 0; i--) { const dt = new Date(now.getFullYear(), now.getMonth() - i, 1); buckets.push({ label: monthLabel(dt), value: 0 }); }
+    for (const o of d.orders) { const dt = new Date(o.placed_at); const bucket = buckets.find((b) => b.label === monthLabel(dt)); if (bucket) bucket.value += Number(o.total_inr ?? 0); }
+    sales = buckets;
   }
 
   return (
@@ -71,9 +61,10 @@ export default async function AdminDashboardPage() {
         <h1 className="mt-2 font-display text-4xl tracking-tight text-[#292521]">Dashboard</h1>
       </div>
 
-      {!isConfigured() ? (
-        <div className="border border-[#d8c7a7] bg-[#fff8ec] p-5 text-sm text-[#6b5631]">
-          Supabase is not configured. Add credentials to <code>.env.local</code> to load live admin data.
+      {!isMongoConfigured() ? (<div className="border border-[#d8c7a7] bg-[#fff8ec] p-5 text-sm text-[#6b5631]">Demo mode: no database configured. Admin data is stored locally in <code>.data/admin-demo.json</code>.</div>) : null}
+      {isMongoConfigured() ? (
+        <div className="border border-[#cfe0d0] bg-[#f4fbf4] p-5 text-sm text-[#35543a]">
+          MongoDB connected. Admin data is being read from MongoDB.
         </div>
       ) : null}
 
@@ -94,7 +85,8 @@ export default async function AdminDashboardPage() {
             <Link href="/admin/products" className="border border-[#ddd5ca] px-4 py-3 text-sm text-[#292521] hover:border-[#a88755]">Manage products</Link>
             <Link href="/admin/orders" className="border border-[#ddd5ca] px-4 py-3 text-sm text-[#292521] hover:border-[#a88755]">View orders</Link>
             <Link href="/admin/customers" className="border border-[#ddd5ca] px-4 py-3 text-sm text-[#292521] hover:border-[#a88755]">View customers</Link>
-            <Link href="/admin/categories" className="border border-[#ddd5ca] px-4 py-3 text-sm text-[#292521] hover:border-[#a88755]">Manage categories & variants</Link>
+            <Link href="/admin/analytics" className="border border-[#ddd5ca] px-4 py-3 text-sm text-[#292521] hover:border-[#a88755]">Sales analytics</Link>
+            <Link href="/admin/settings" className="border border-[#ddd5ca] px-4 py-3 text-sm text-[#292521] hover:border-[#a88755]">Website settings</Link>
           </div>
         </div>
       </div>
@@ -136,6 +128,7 @@ export default async function AdminDashboardPage() {
           </table>
         </div>
       </div>
+
     </div>
   );
 }

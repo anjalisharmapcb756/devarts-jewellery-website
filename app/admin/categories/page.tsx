@@ -1,13 +1,20 @@
 import type { Metadata } from "next";
-import { createClient } from "@/lib/supabase/server";
+import { readDemoDB } from "@/lib/admin/demo-store";
+import { isMongoConfigured, mongoGetCategories } from "@/lib/admin/mongo-store";
 import { deleteCategory, upsertCategory } from "@/app/admin/actions";
 import { ConfirmDeleteButton } from "@/components/admin/confirm-delete-button";
 
 export const metadata: Metadata = { title: "Categories | Admin" };
 
+export const instant = false;
+
 export default async function AdminCategoriesPage() {
-  const supabase = await createClient();
-  const { data: categories } = await supabase.from("categories").select("*").order("display_order", { ascending: true });
+  let categories: any[] = [];
+  if (isMongoConfigured()) {
+    categories = await mongoGetCategories();
+  } else {
+    categories = [...readDemoDB().categories].sort((a, b) => (a.display_order ?? 0) - (b.display_order ?? 0));
+  }
 
   return (
     <div className="space-y-8">

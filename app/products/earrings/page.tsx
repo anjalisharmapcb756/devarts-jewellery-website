@@ -7,6 +7,8 @@ export const metadata: Metadata = {
   description: "From classic studs to luminous drops, find earrings for every occasion.",
 };
 
+export const instant = false;
+
 export default async function EarringsPage() {
   const products = await getProductsAsync();
   return (
