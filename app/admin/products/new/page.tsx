@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import { readDemoDB } from "@/lib/admin/demo-store";
 import { isMongoConfigured, mongoGetCategories, mongoGetGemstones, mongoGetMetals } from "@/lib/admin/mongo-store";
@@ -8,6 +9,7 @@ export const metadata: Metadata = { title: "Add Product | Admin" };
 export const instant = false;
 
 export default async function NewProductPage() {
+  await connection();
   let categories: any[] = [], gemstones: any[] = [], metals: any[] = [];
   if (isMongoConfigured()) {
     [categories, gemstones, metals] = await Promise.all([mongoGetCategories(), mongoGetGemstones(), mongoGetMetals()]);

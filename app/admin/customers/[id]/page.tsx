@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import Link from "next/link";
@@ -11,6 +12,7 @@ export const instant = false;
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminCustomerDetailPage({ params }: Props) {
+  await connection();
   const { id } = await params;
   let customer: any = null; let orders: any[] = []; let addresses: any[] = [];
   if (isMongoConfigured()) {
