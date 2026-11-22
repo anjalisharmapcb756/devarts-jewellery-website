@@ -1,4 +1,5 @@
 ﻿import type { Metadata } from "next";
+import { connection } from "next/server";
 import { SalesChart } from "@/components/admin/sales-chart";
 import { StatCard } from "@/components/admin/stat-card";
 import { readDemoDB } from "@/lib/admin/demo-store";
@@ -12,6 +13,7 @@ export const instant = false;
 function monthLabel(d: Date) { return d.toLocaleString("en-US", { month: "short" }); }
 
 export default async function AdminAnalyticsPage() {
+  await connection();
   let orders: any[] = [];
   let products: any[] = [];
   if (isMongoConfigured()) {

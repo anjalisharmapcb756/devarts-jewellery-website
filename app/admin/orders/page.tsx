@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { readDemoDB } from "@/lib/admin/demo-store";
@@ -11,6 +12,7 @@ export const instant = false;
 type Props = { searchParams: Promise<{ q?: string; status?: string }> };
 
 export default async function AdminOrdersPage({ searchParams }: Props) {
+  await connection();
   const { q = "", status = "" } = await searchParams;
   let orders: any[] = [];
   if (isMongoConfigured()) {

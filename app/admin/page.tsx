@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import Link from "next/link";
 import { StatCard } from "@/components/admin/stat-card";
@@ -19,6 +20,7 @@ function monthLabel(d: Date) {
 }
 
 export default async function AdminDashboardPage() {
+  await connection();
   let totalRevenue = 0;
   let totalOrders = 0;
   let totalCustomers = 0;

@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import { readDemoDB } from "@/lib/admin/demo-store";
 import { isMongoConfigured, mongoGetGemstones } from "@/lib/admin/mongo-store";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Gemstones | Admin" };
 export const instant = false;
 
 export default async function AdminGemstonesPage() {
+  await connection();
   let items: any[] = [];
   if (isMongoConfigured()) {
     items = await mongoGetGemstones();

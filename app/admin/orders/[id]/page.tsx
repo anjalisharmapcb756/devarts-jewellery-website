@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
 import { readDemoDB } from "@/lib/admin/demo-store";
@@ -11,6 +12,7 @@ export const instant = false;
 type Props = { params: Promise<{ id: string }> };
 
 export default async function AdminOrderDetailPage({ params }: Props) {
+  await connection();
   const { id } = await params;
   let order: any = null; let items: any[] = [];
   if (isMongoConfigured()) {

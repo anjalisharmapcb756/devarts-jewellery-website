@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import { readDemoDB } from "@/lib/admin/demo-store";
 import { isMongoConfigured, mongoGetCategories } from "@/lib/admin/mongo-store";
@@ -9,6 +10,7 @@ export const metadata: Metadata = { title: "Categories | Admin" };
 export const instant = false;
 
 export default async function AdminCategoriesPage() {
+  await connection();
   let categories: any[] = [];
   if (isMongoConfigured()) {
     categories = await mongoGetCategories();
