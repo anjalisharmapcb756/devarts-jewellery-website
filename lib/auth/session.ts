@@ -2,7 +2,17 @@
 import { cookies } from "next/headers";
 
 const COOKIE = "vara-session";
-const secret = new TextEncoder().encode(process.env.AUTH_SECRET || process.env.MONGODB_URI || "dev-secret-change-me");
+
+function getAuthSecret() {
+  const secret = process.env.AUTH_SECRET || process.env.MONGODB_URI;
+  if (secret) return secret;
+  if (process.env.NODE_ENV === "production") {
+    throw new Error("Missing AUTH_SECRET (or MONGODB_URI fallback) in production.");
+  }
+  return "dev-secret-change-me";
+}
+
+const secret = new TextEncoder().encode(getAuthSecret());
 
 export type SessionPayload = { sub: string; email: string; role: "customer" | "admin"; name?: string };
 

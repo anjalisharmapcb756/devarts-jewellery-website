@@ -4,7 +4,7 @@ import { getProductsAsync } from "@/lib/data/products-db";
 const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vara.example.com";
 
 export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
-  const now = new Date();
+  const lastModified = "2026-04-25";
   const staticRoutes = [
     "",
     "/products",
@@ -23,7 +23,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     "/forgot-password",
   ].map((route) => ({
     url: `${siteUrl}${route}`,
-    lastModified: now,
+    lastModified,
     changeFrequency: route === "" ? "daily" as const : "weekly" as const,
     priority: route === "" ? 1 : route.startsWith("/products") ? 0.8 : 0.6,
   }));
@@ -32,7 +32,7 @@ export default async function sitemap(): Promise<MetadataRoute.Sitemap> {
     const products = await getProductsAsync();
     const productRoutes = products.map((p) => ({
       url: `${siteUrl}/products/${p.slug}`,
-      lastModified: now,
+      lastModified,
       changeFrequency: "weekly" as const,
       priority: 0.7,
     }));

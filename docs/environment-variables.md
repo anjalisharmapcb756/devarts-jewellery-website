@@ -39,6 +39,8 @@ Create `.env.local` for local development. In production, set variables in your 
 | `MONGODB_URI` | Yes | MongoDB connection string |
 | `CORS_ORIGINS` | Yes | Comma-separated allowed origins, e.g. `https://your-domain.com` |
 | `ADMIN_JWT_SECRET` | Yes | Long random secret (>= 16 chars) |
+| `RAZORPAY_KEY_ID` | For online payments | Server key ID (`rzp_test_...` for test) |
+| `RAZORPAY_KEY_SECRET` | For online payments | Server-only key secret; never expose to the browser |
 | `SEED_ADMIN_EMAIL` | For seed | First admin email |
 | `SEED_ADMIN_PASSWORD` | For seed | First admin password |
 
@@ -48,4 +50,6 @@ Create `.env.local` for local development. In production, set variables in your 
 - Do **not** commit `.env.local`, `.env`, or real credentials.
 - Rotate credentials immediately if exposed.
 - Use Razorpay test keys until the full test flow is verified.
+- The Vite frontend does **not** need a Razorpay env var; `/api/checkout/create-razorpay-order` returns the public key ID after the backend creates the order.
+- If Razorpay vars are absent, checkout stays fully usable through Cash on Delivery.
 - Use HTTPS in production; set secure cookies by running with `NODE_ENV=production`.

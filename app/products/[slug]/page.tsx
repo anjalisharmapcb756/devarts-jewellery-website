@@ -1,6 +1,7 @@
 import { Suspense } from "react";
 import type { Metadata } from "next";
 import { notFound } from "next/navigation";
+import { connection } from "next/server";
 import { Container } from "@/components/ui/container";
 import { ProductDetail } from "@/components/products/product-detail";
 import { getProductBySlugAsync, getProductsAsync, getRelatedProductsAsync } from "@/lib/data/products-db";
@@ -45,6 +46,7 @@ export async function generateMetadata({
 }
 
 async function ProductDetailContent({ params }: ProductDetailPageProps) {
+  await connection();
   const { slug } = await params;
   const [product, allProducts] = await Promise.all([getProductBySlugAsync(slug), getProductsAsync()]);
   if (!product) notFound();

@@ -27,15 +27,20 @@ export function LoginForm() {
     const validationError = validate(email, password);
     if (validationError) { setError(validationError); return; }
     setLoading(true);
-    const fd = new FormData();
-    fd.append("email", email);
-    fd.append("password", password);
-    fd.append("next", next);
-    const result = await loginAction(fd);
-    setLoading(false);
-    if (result?.error) { setError(result.error); return; }
-    router.push(result?.next || next);
-    router.refresh();
+    try {
+      const fd = new FormData();
+      fd.append("email", email);
+      fd.append("password", password);
+      fd.append("next", next);
+      const result = await loginAction(fd);
+      if (result?.error) { setError(result.error); return; }
+      router.push(result?.next || next);
+      router.refresh();
+    } catch {
+      setError("Unable to sign in right now. Please try again.");
+    } finally {
+      setLoading(false);
+    }
   };
 
   return (

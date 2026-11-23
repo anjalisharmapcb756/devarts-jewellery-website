@@ -1,6 +1,7 @@
 import { connection } from "next/server";
 import type { Metadata } from "next";
 import Link from "next/link";
+import { connection } from "next/server";
 import { StatCard } from "@/components/admin/stat-card";
 import { SalesChart } from "@/components/admin/sales-chart";
 // settings moved to /admin/settings
