@@ -3,9 +3,11 @@ import { Category, Gemstone, MetalVariant } from "@/lib/models/Catalog";
 import { Product as ProductModel, ProductImage } from "@/lib/models/Product";
 import type { Gemstone as GemstoneT, MetalType, Product, ProductReview, ProductSpecifications } from "@/types/product";
 import { products as mockProducts } from "@/lib/data/products";
+import { cacheLife, cacheTag } from "next/cache";
 
 type DbRow = Record<string, any>;
-function isMongoConfigured() { return Boolean(process.env.MONGODB_URI); }
+const mongoConfigured = Boolean(process.env.MONGODB_URI);
+function isMongoConfigured() { return mongoConfigured; }
 function asGemstone(v: string | null | undefined): GemstoneT { const allowed: GemstoneT[] = ["Diamond", "Emerald", "Ruby", "Sapphire", "Pearl"]; return allowed.includes(v as GemstoneT) ? (v as GemstoneT) : "Diamond"; }
 function asMetal(v: string | null | undefined): MetalType { const allowed: MetalType[] = ["Yellow Gold", "White Gold", "Rose Gold", "Platinum"]; return allowed.includes(v as MetalType) ? (v as MetalType) : "Yellow Gold"; }
 
@@ -66,6 +68,9 @@ async function getMongoProducts(): Promise<Product[]> {
 }
 
 export async function getProductsAsync(): Promise<Product[]> {
+  "use cache";
+  cacheLife("hours");
+  cacheTag("products");
   if (isMongoConfigured()) { try { const list = await getMongoProducts(); return list.length ? list : mockProducts; } catch { return mockProducts; } }
   return mockProducts;
 }

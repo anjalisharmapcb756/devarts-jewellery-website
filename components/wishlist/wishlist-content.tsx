@@ -45,7 +45,7 @@ export function WishlistContent({ products = mockProducts }: { products?: Produc
           </div>
           <div className="pt-5">
             <p className="text-xs tracking-[0.2em] text-muted uppercase">{product.category}</p>
-            <Link href={`/products/${product.slug}`} className="mt-2 block font-display text-2xl tracking-tight text-foreground hover:text-accent-strong">
+            <Link href={`/products/${product.slug}`} className="mt-2 block font-display text-2xl tracking-tight text-foreground hover:text-accent-text">
               {product.name}
             </Link>
             <p className="mt-2 text-sm text-foreground">{formatCurrency(product.price)}</p>

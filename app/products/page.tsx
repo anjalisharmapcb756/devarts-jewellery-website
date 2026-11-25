@@ -1,12 +1,14 @@
 import { Suspense } from "react";
-import type { Metadata } from "next";
+import { connection } from "next/server";
 import { Catalogue } from "@/components/products/catalogue";
 import { getProductsAsync } from "@/lib/data/products-db";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = publicMetadata({
   title: "Products",
   description: "Browse our complete luxury jewellery catalogue.",
-};
+  path: "/products",
+});
 
 export const instant = false;
 
@@ -25,6 +27,7 @@ const categoryMap: Record<string, string> = {
 };
 
 async function ProductsCatalogue({ searchParams }: ProductsPageProps) {
+  await connection();
   const params = await searchParams;
   const initialQuery = params.q ?? "";
   const initialJewelleryType = params.category

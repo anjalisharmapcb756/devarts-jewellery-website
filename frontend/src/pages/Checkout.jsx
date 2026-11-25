@@ -57,6 +57,8 @@ export default function Checkout() {
   const [quote, setQuote] = useState(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [quoteError, setQuoteError] = useState("");
+  const [quoteErrorProductId, setQuoteErrorProductId] = useState("");
+  const [termsAccepted, setTermsAccepted] = useState(false);
   const [couponInput, setCouponInput] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState("");
   const [couponMessage, setCouponMessage] = useState("");
@@ -76,7 +78,7 @@ export default function Checkout() {
     selection: i.selection,
   })), [cart]);
 
-  const unavailableId = quoteError.match(/Product unavailable:\s*([^\s.]+)/i)?.[1] || null;
+  const unavailableId = quoteErrorProductId || quoteError.match(/Product unavailable:\s*([^\s.]+)/i)?.[1] || null;
   const unavailableItem = unavailableId ? cart.find((i) => String(i.productId) === unavailableId) : null;
 
   const applyAddress = useCallback((address) => {
@@ -95,10 +97,7 @@ export default function Checkout() {
   }, []);
 
   useEffect(() => {
-    apiFetch("/checkout/config").then((d) => {
-      setConfig(d || {});
-      if (d?.razorpayEnabled) setPaymentMethod("razorpay");
-    }).catch(() => {});
+    apiFetch("/checkout/config").then((d) => setConfig(d || {})).catch(() => {});
   }, []);
 
   useEffect(() => {
@@ -124,10 +123,16 @@ export default function Checkout() {
     let active = true;
     setQuoteLoading(true);
     setQuoteError("");
+    setQuoteErrorProductId("");
     const timer = window.setTimeout(() => {
       apiFetch("/checkout/quote", { method: "POST", body: JSON.stringify({ items, couponCode: appliedCoupon || null }) })
         .then((d) => { if (active) setQuote(d?.quote || null); })
-        .catch((e) => { if (active) setQuoteError(e.message || "Unable to price your order."); })
+        .catch((e) => {
+          if (!active) return;
+          setQuoteError(e.message || "Unable to price your order.");
+          const details = e.data?.error?.details || {};
+          setQuoteErrorProductId(String(details.productId || ""));
+        })
         .finally(() => { if (active) setQuoteLoading(false); });
     }, 250);
     return () => { active = false; window.clearTimeout(timer); };
@@ -144,6 +149,8 @@ export default function Checkout() {
       setCouponMessage(code ? `Coupon ${code.toUpperCase()} applied.` : "Coupon removed.");
     } catch (e) {
       setCouponMessage(e.message || "Invalid coupon code.");
+      const details = e.data?.error?.details || {};
+      if (details.productId) setQuoteErrorProductId(String(details.productId));
     } finally {
       setCouponLoading(false);
     }
@@ -153,10 +160,12 @@ export default function Checkout() {
     if (!user) return "Please login before checkout.";
     if (!items.length) return "Your cart is empty.";
     if (!/^\S+@\S+\.\S+$/.test(contact.email.trim())) return "Enter a valid email address.";
-    if (contact.phone.replace(/\D/g, "").length < 8) return "Enter a valid phone number.";
-    for (const [key, label] of [["fullName", "recipient name"], ["line1", "address"], ["city", "city"], ["state", "state"], ["postalCode", "postal code"]]) {
+    if (contact.phone.replace(/\D/g, "").length < 8 || contact.phone.replace(/\D/g, "").length > 15) return "Enter a valid phone number.";
+    for (const [key, label] of [["fullName", "recipient name"], ["line1", "address"], ["city", "city"], ["state", "state"], ["country", "country"]]) {
       if (!String(shipping[key] || "").trim()) return `Enter the ${label}.`;
     }
+    if (!/^[A-Za-z0-9][A-Za-z0-9\s-]{3,10}$/.test(shipping.postalCode.trim())) return "Enter a valid postal code.";
+    if (!termsAccepted) return "Please accept the terms and privacy policy.";
     if (quoteError || !quote) return quoteError || "Order summary is not ready yet.";
     return "";
   };
@@ -341,7 +350,10 @@ export default function Checkout() {
             >
               {submitting ? "Placing your order..." : paymentMethod === "cod" ? "Place Order — Cash on Delivery" : "Pay Securely"}
             </button>
-            <p className="text-center text-xs text-muted">By placing this order you agree to our <Link to="/terms" className="underline">Terms</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>.</p>
+            <label className="flex items-start gap-3 text-xs text-muted">
+              <input type="checkbox" checked={termsAccepted} onChange={(e) => setTermsAccepted(e.target.checked)} className="mt-0.5 h-4 w-4 accent-[#8b6f52]" />
+              <span>I agree to the <Link to="/terms" className="underline">Terms</Link> and <Link to="/privacy" className="underline">Privacy Policy</Link>.</span>
+            </label>
           </div>
 
           <aside className="h-fit border border-border bg-white p-6 sm:p-8">

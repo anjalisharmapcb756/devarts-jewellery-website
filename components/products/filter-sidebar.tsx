@@ -106,7 +106,7 @@ export function FilterSidebar({ filters, onChange, lockedCategory }: FilterSideb
             </label>
           ))}
           {filters.priceRange ? (
-            <button type="button" onClick={() => onChange({ ...filters, priceRange: "" })} className="text-xs text-accent-strong underline underline-offset-4">
+            <button type="button" onClick={() => onChange({ ...filters, priceRange: "" })} className="text-xs text-accent-text underline underline-offset-4">
               Clear price
             </button>
           ) : null}

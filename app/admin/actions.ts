@@ -1,6 +1,6 @@
 ﻿"use server";
 
-import { revalidatePath } from "next/cache";
+import { revalidatePath, updateTag } from "next/cache";
 import { redirect } from "next/navigation";
 import { uploadProductImageFile } from "@/lib/storage";
 import { assertAdmin } from "@/lib/auth/admin";
@@ -84,14 +84,14 @@ export async function upsertProduct(formData: FormData) {
     if (hoverImageUrl) { d.productImages = d.productImages.filter((im) => !(im.product_id === productId && im.sort_order === 1)); d.productImages.push({ id: nextId("img"), product_id: productId, url: hoverImageUrl, alt_text: `${payload.name} alternate`, sort_order: 1, is_primary: false, is_hover: true }); }
     writeDemoDB(d);
   }
-  revalidatePath("/admin/products"); revalidatePath("/products"); revalidatePath("/"); redirect("/admin/products");
+  updateTag("products"); revalidatePath("/admin/products"); revalidatePath("/products"); revalidatePath("/"); redirect("/admin/products");
 }
 
 export async function deleteProduct(formData: FormData) {
   await assertAdmin(); const id = str(formData.get("id"));
   if (isMongoConfigured()) { await mongoDeleteProduct(id); }
   else { const d = readDemoDB(); d.products = d.products.filter((p) => p.id !== id); d.productImages = d.productImages.filter((im) => im.product_id !== id); writeDemoDB(d); }
-  revalidatePath("/admin/products"); revalidatePath("/products"); revalidatePath("/");
+  updateTag("products"); revalidatePath("/admin/products"); revalidatePath("/products"); revalidatePath("/");
 }
 
 export async function updateOrderStatus(formData: FormData) {

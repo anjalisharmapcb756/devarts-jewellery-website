@@ -1,14 +1,14 @@
 import { Link } from "react-router-dom";
 import { useStore } from "../context/StoreContext";
 import { formatPrice } from "../lib/pricing";
-import { CATALOGUE, productFallback } from "../data/catalogue";
+import { mergeCatalogue, productFallback } from "../data/catalogue";
 
 export default function Cart() {
   const { cart, products, removeFromCart, updateCartQuantity } = useStore();
   const subtotal = cart.reduce((s, i) => s + Number(i.unitPrice || 0) * i.quantity, 0);
 
-  const findProduct = (id) => CATALOGUE.find((p) => p.id === id || p.slug === id)
-    || (products || []).find((p) => String(p.id) === String(id));
+  const catalog = mergeCatalogue(products || []);
+  const findProduct = (id) => catalog.find((p) => String(p.id) === String(id) || String(p.slug) === String(id));
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6">
@@ -40,7 +40,7 @@ export default function Cart() {
                     {selection && <p className="mt-1 text-xs text-muted">{selection}</p>}
                     <p className="mt-1 text-sm text-muted">{formatPrice(item.unitPrice)} each</p>
                     <div className="mt-3 flex items-center gap-3">
-                      <input type="number" min="1" value={item.quantity} onChange={(e) => updateCartQuantity(item.key, Number(e.target.value))} className="w-20 border border-border px-2 py-1" aria-label="Quantity" />
+                      <input type="number" min="1" max={Math.max(1, Number(product?.stock_quantity || product?.stock || 20))} value={item.quantity} onChange={(e) => updateCartQuantity(item.key, Number(e.target.value))} className="w-20 border border-border px-2 py-1" aria-label="Quantity" />
                       <button onClick={() => removeFromCart(item.key)} className="text-sm text-[#8a4b4b] hover:underline">Remove</button>
                     </div>
                   </div>

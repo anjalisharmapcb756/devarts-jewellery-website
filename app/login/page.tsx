@@ -2,12 +2,14 @@
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { LoginForm } from "@/components/auth/login-form";
+import { noIndex } from "@/lib/seo";
 
 export const instant = false;
 
 export const metadata: Metadata = {
   title: "Login",
   description: "Sign in to your Vara account.",
+  robots: noIndex,
 };
 
 export default function LoginPage() {

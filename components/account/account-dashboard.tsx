@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { useEffect, useState } from "react";
 import { useRouter } from "next/navigation";
@@ -114,7 +114,7 @@ export function AccountDashboard() {
           if (oRes.ok) {
             const oData = await oRes.json();
             if (Array.isArray(oData.orders) && oData.orders.length > 0) {
-              setOrders(oData.orders.map((o: any) => ({ id: o.orderNumber || o.id, date: o.date ? new Date(o.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "—", total: formatInr(Number(o.total || 0)), status: String(o.status || "pending"), items: Array.isArray(o.items) ? o.items : [] })));
+              setOrders(oData.orders.map((o: any) => ({ id: o.orderNumber || o.id, date: o.date ? new Date(o.date).toLocaleDateString("en-IN", { day: "numeric", month: "short", year: "numeric" }) : "�", total: formatInr(Number(o.total || 0)), status: String(o.status || "pending"), items: Array.isArray(o.items) ? o.items : [] })));
             }
           }
         } catch {}
@@ -202,7 +202,7 @@ export function AccountDashboard() {
 
       <div className="flex flex-col gap-4 border border-border bg-surface p-6 sm:flex-row sm:items-center sm:justify-between sm:p-8">
         <div>
-          <p className="text-xs font-medium tracking-[0.24em] text-accent-strong uppercase">Welcome</p>
+          <p className="text-xs font-medium tracking-[0.24em] text-accent-text uppercase">Welcome</p>
           <h2 className="mt-2 font-display text-3xl text-foreground">{user.fullName || "Vara Customer"}</h2>
           <p className="mt-1 text-sm text-muted">{user.email}</p>
         </div>
@@ -262,7 +262,7 @@ export function AccountDashboard() {
                   <div key={address.id} className="border border-border p-5">
                     <div className="flex items-start justify-between gap-4">
                       <div>
-                        <p className="text-xs tracking-[0.16em] text-accent-strong uppercase">{address.label}{address.isDefault ? " Â· Default" : ""}</p>
+                        <p className="text-xs tracking-[0.16em] text-accent-text uppercase">{address.label}{address.isDefault ? " · Default" : ""}</p>
                         <p className="mt-2 text-sm font-medium text-foreground">{address.name}</p>
                         <p className="mt-1 text-sm leading-6 text-muted">{address.line1}{address.line2 ? `, ${address.line2}` : ""}<br />{address.city}, {address.state} {address.postalCode}<br />{address.phone}</p>
                       </div>
@@ -318,7 +318,7 @@ export function AccountDashboard() {
                     </div>
                     <div className="text-right">
                       <p className="text-sm text-foreground">{order.total}</p>
-                      <p className="text-xs tracking-[0.14em] text-accent-strong uppercase">{order.status}</p>
+                      <p className="text-xs tracking-[0.14em] text-accent-text uppercase">{order.status}</p>
                     </div>
                   </div>
                   <p className="mt-3 text-sm text-muted">{order.items.join(", ")}</p>

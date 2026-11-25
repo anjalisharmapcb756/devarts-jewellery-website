@@ -29,7 +29,7 @@ export default async function AdminAnalyticsPage() {
   const now = new Date();
   const buckets: { label: string; value: number }[] = [];
   for (let i = 5; i >= 0; i--) { const dt = new Date(now.getFullYear(), now.getMonth() - i, 1); buckets.push({ label: monthLabel(dt), value: 0 }); }
-  for (const o of orders) { const dt = new Date(o.placed_at || o.createdAt || Date.now()); const bucket = buckets.find((b) => b.label === monthLabel(dt)); if (bucket) bucket.value += Number(o.total_inr ?? 0); }
+  for (const o of orders) { const dt = new Date(o.placed_at || o.createdAt || now.getTime()); const bucket = buckets.find((b) => b.label === monthLabel(dt)); if (bucket) bucket.value += Number(o.total_inr ?? 0); }
 
   const statusCounts = orders.reduce((acc: Record<string, number>, o) => { const k = String(o.status || "unknown"); acc[k] = (acc[k] || 0) + 1; return acc; }, {});
   const paymentCounts = orders.reduce((acc: Record<string, number>, o) => { const k = String(o.payment_status || "unknown"); acc[k] = (acc[k] || 0) + 1; return acc; }, {});

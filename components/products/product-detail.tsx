@@ -20,7 +20,7 @@ type ProductDetailProps = {
 
 function RatingStars({ rating }: { rating: number }) {
   return (
-    <div className="flex items-center gap-1" aria-label={`${rating} out of 5 stars`}>
+    <div className="flex items-center gap-1" role="img" aria-label={`${rating} out of 5 stars`}>
       {[1, 2, 3, 4, 5].map((star) => {
         const filled = rating >= star - 0.25;
         return (
@@ -68,7 +68,7 @@ function OptionButton({
       className={`min-w-[52px] border px-4 py-3 text-xs font-medium tracking-[0.08em] uppercase transition ${
         active
           ? "border-foreground bg-foreground text-background"
-          : "border-border bg-surface text-foreground hover:border-accent hover:text-accent-strong"
+          : "border-border bg-surface text-foreground hover:border-accent hover:text-accent-text"
       } disabled:cursor-not-allowed disabled:opacity-40`}
     >
       {children}
@@ -158,7 +158,7 @@ export function ProductDetail({ product, relatedProducts, allProducts }: Product
         <ProductGallery images={images} name={product.name} badge={product.badge} discount={discount} />
 
         <div className="flex flex-col">
-          <p className="text-sm font-medium tracking-[0.25em] text-accent-strong uppercase">
+          <p className="text-sm font-medium tracking-[0.25em] text-accent-text uppercase">
             {product.category}
           </p>
           <h1 className="mt-4 font-display text-4xl tracking-tight text-foreground sm:text-5xl">
@@ -170,7 +170,7 @@ export function ProductDetail({ product, relatedProducts, allProducts }: Product
             <span className="text-foreground">{(product.rating ?? 4.8).toFixed(1)}</span>
             <span className="text-muted">({product.reviewCount ?? 24} Reviews)</span>
             <span className="text-border">|</span>
-            <span className={product.inStock ? "text-accent-strong" : "text-muted"}>
+            <span className={product.inStock ? "text-accent-text" : "text-muted"}>
               {product.inStock ? "In Stock" : "Out of Stock"}
             </span>
           </div>
@@ -181,7 +181,7 @@ export function ProductDetail({ product, relatedProducts, allProducts }: Product
               <p className="text-base text-muted line-through">{formatCurrency(originalUnitPrice)}</p>
             ) : null}
             {discount > 0 ? (
-              <span className="bg-surface-muted px-3 py-1 text-xs font-medium tracking-[0.14em] text-accent-strong uppercase">
+              <span className="bg-surface-muted px-3 py-1 text-xs font-medium tracking-[0.14em] text-accent-text uppercase">
                 Save {discount}%
               </span>
             ) : null}
@@ -267,7 +267,7 @@ export function ProductDetail({ product, relatedProducts, allProducts }: Product
                 type="button"
                 onClick={() => toggleWishlist(product.id)}
                 aria-label={wished ? "Remove from wishlist" : "Add to wishlist"}
-                className="inline-flex items-center justify-center gap-2 border border-border px-6 py-4 text-sm font-medium tracking-[0.14em] text-foreground uppercase transition hover:border-accent hover:text-accent-strong"
+                className="inline-flex items-center justify-center gap-2 border border-border px-6 py-4 text-sm font-medium tracking-[0.14em] text-foreground uppercase transition hover:border-accent hover:text-accent-text"
               >
                 <HeartIcon className={`h-4 w-4 ${wished ? "fill-accent stroke-accent" : ""}`} />
                 {wished ? "Wishlisted" : "Wishlist"}
@@ -277,7 +277,7 @@ export function ProductDetail({ product, relatedProducts, allProducts }: Product
               type="button"
               onClick={handleBuyNow}
               disabled={!product.inStock}
-              className="inline-flex w-full items-center justify-center border border-accent px-6 py-4 text-sm font-medium tracking-[0.14em] text-accent-strong uppercase transition hover:bg-accent hover:text-[#2b2620] disabled:cursor-not-allowed disabled:opacity-45"
+              className="inline-flex w-full items-center justify-center border border-accent px-6 py-4 text-sm font-medium tracking-[0.14em] text-accent-text uppercase transition hover:bg-accent hover:text-[#2b2620] disabled:cursor-not-allowed disabled:opacity-45"
             >
               Buy Now
             </button>
@@ -362,7 +362,7 @@ export function ProductDetail({ product, relatedProducts, allProducts }: Product
         </div>
 
         <div className="bg-surface-muted/45 p-8">
-          <p className="text-sm font-medium tracking-[0.25em] text-accent-strong uppercase">
+          <p className="text-sm font-medium tracking-[0.25em] text-accent-text uppercase">
             Customer Reviews
           </p>
           <h2 className="mt-4 font-display text-3xl tracking-tight text-foreground">

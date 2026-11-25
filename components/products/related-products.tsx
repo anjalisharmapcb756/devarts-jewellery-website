@@ -12,7 +12,7 @@ export function RelatedProducts({ products }: RelatedProductsProps) {
     <section className="border-t border-border py-16 sm:py-20">
       <div className="flex items-end justify-between gap-4">
         <div>
-          <p className="text-sm font-medium tracking-[0.25em] text-accent-strong uppercase">
+          <p className="text-sm font-medium tracking-[0.25em] text-accent-text uppercase">
             You May Also Love
           </p>
           <h2 className="mt-4 font-display text-3xl tracking-tight text-foreground sm:text-4xl">

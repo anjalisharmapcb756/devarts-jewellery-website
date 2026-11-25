@@ -1,12 +1,14 @@
 import type { Metadata } from "next";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ForgotPasswordForm } from "@/components/auth/forgot-password-form";
+import { noIndex } from "@/lib/seo";
 
 export const instant = false;
 
 export const metadata: Metadata = {
   title: "Forgot Password",
   description: "Reset your Vara account password.",
+  robots: noIndex,
 };
 
 export default function ForgotPasswordPage() {

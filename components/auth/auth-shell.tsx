@@ -14,7 +14,7 @@ export function AuthShell({ eyebrow, title, description, children, footer }: Aut
     <section className="py-16 sm:py-24">
       <Container>
         <div className="mx-auto max-w-xl border border-border bg-surface p-8 sm:p-10">
-          <p className="text-xs font-medium tracking-[0.28em] text-accent-strong uppercase">
+          <p className="text-xs font-medium tracking-[0.28em] text-accent-text uppercase">
             {eyebrow}
           </p>
           <h1 className="mt-4 font-display text-4xl tracking-tight text-foreground sm:text-5xl">
@@ -31,7 +31,7 @@ export function AuthShell({ eyebrow, title, description, children, footer }: Aut
 
 export function AuthLink({ href, children }: { href: string; children: React.ReactNode }) {
   return (
-    <Link href={href} className="text-accent-strong underline underline-offset-4 transition hover:text-foreground">
+    <Link href={href} className="text-accent-text underline underline-offset-4 transition hover:text-foreground">
       {children}
     </Link>
   );

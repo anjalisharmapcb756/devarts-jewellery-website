@@ -5,11 +5,6 @@ import { apiFetch } from "../lib/api";
 import { formatPrice } from "../lib/pricing";
 import AdminNav from "../components/admin/AdminNav";
 
-const EMPTY_PRODUCTS = [
-  { id: "r1", name: "Aurora Diamond Ring", category: "Rings", price_inr: 89500 },
-  { id: "n1", name: "Celeste Pearl Pendant", category: "Necklaces", price_inr: 64500 },
-  { id: "e1", name: "Lumière Drop Earrings", category: "Earrings", price_inr: 72500 },
-];
 const ORDER_STATUS = ["Confirmed", "Processing", "Shipped", "Delivered"];
 
 export default function AdminDashboard() {
@@ -28,15 +23,15 @@ export default function AdminDashboard() {
       setLoading(true);
       try {
         const [d, o, p, c] = await Promise.all([
-          apiFetch("/admin/dashboard").catch(() => null),
-          apiFetch("/admin/orders").catch(() => []),
-          apiFetch("/admin/products").catch(() => []),
-          apiFetch("/admin/customers").catch(() => []),
+          apiFetch("/admin/dashboard"),
+          apiFetch("/admin/orders"),
+          apiFetch("/admin/products"),
+          apiFetch("/admin/customers"),
         ]);
         if (!alive) return;
         setData(d);
         setOrders(Array.isArray(o) ? o : []);
-        setProducts(Array.isArray(p) && p.length ? p : EMPTY_PRODUCTS);
+        setProducts(Array.isArray(p) ? p : []);
         setCustomers(Array.isArray(c) ? c : []);
       } catch (e) {
         if (alive) setErr(e.message || "Unable to load dashboard");
@@ -182,13 +177,13 @@ export default function AdminDashboard() {
             <Link to="/admin/products" className="text-[11px] uppercase tracking-[0.14em] text-accent hover:underline">Manage Products</Link>
           </div>
           <div className="grid gap-4 p-6 sm:grid-cols-2 lg:grid-cols-3">
-            {products.slice(0, 6).map((p) => (
+            {products.length ? products.slice(0, 6).map((p) => (
               <div key={p.id || p._id} className="border border-border p-4">
                 <p className="text-[11px] uppercase tracking-[0.12em] text-muted">{p.categories?.name || p.category || "Jewellery"}</p>
                 <p className="mt-1 font-medium">{p.name}</p>
                 <p className="mt-2 text-sm text-muted">{formatPrice(p.price_inr || p.price || 0)}</p>
               </div>
-            ))}
+            )) : <p className="text-sm text-muted">No products yet.</p>}
           </div>
         </section>
       </div>

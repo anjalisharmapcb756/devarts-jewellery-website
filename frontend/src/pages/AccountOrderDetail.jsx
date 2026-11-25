@@ -1,17 +1,38 @@
 import { useEffect, useState } from "react";
-import { useParams, Navigate, Link } from "react-router-dom";
+import { Link, Navigate, useParams } from "react-router-dom";
 import { useAuth } from "../context/AuthContext";
 import { apiFetch } from "../lib/api";
 import { formatPrice } from "../lib/pricing";
 
 export default function AccountOrderDetail() {
   const { id } = useParams();
-  const { user, loading } = useAuth();
+  const { user, loading: authLoading } = useAuth();
   const [order, setOrder] = useState(null);
-  useEffect(() => { if (user) apiFetch("/orders").then((d) => setOrder((d?.orders || []).find((o) => String(o.id) === String(id)) || null)).catch(() => {}); }, [user, id]);
-  if (loading) return <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 text-muted">Loading...</div>;
+  const [loading, setLoading] = useState(true);
+
+  useEffect(() => {
+    if (!user) return undefined;
+    let active = true;
+    setLoading(true);
+    apiFetch(`/orders/${encodeURIComponent(id)}`)
+      .then((data) => { if (active) setOrder(data?.order || null); })
+      .catch(() => { if (active) setOrder(null); })
+      .finally(() => { if (active) setLoading(false); });
+    return () => { active = false; };
+  }, [user, id]);
+
+  if (authLoading || loading) {
+    return <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 text-muted">Loading...</div>;
+  }
   if (!user) return <Navigate to="/login" replace />;
-  if (!order) return <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 text-muted">Order not found. <Link to="/account/orders" className="text-accent">Back to orders</Link></div>;
+  if (!order) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 text-muted">
+        Order not found. <Link to="/account/orders" className="text-accent">Back to orders</Link>
+      </div>
+    );
+  }
+
   return (
     <div className="mx-auto max-w-4xl px-4 py-12 sm:px-6">
       <Link to="/account/orders" className="text-sm text-muted hover:text-accent">← Back to orders</Link>

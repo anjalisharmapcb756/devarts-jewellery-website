@@ -1,7 +1,6 @@
 import { connection } from "next/server";
 import type { Metadata } from "next";
 import Link from "next/link";
-import { connection } from "next/server";
 import { StatCard } from "@/components/admin/stat-card";
 import { SalesChart } from "@/components/admin/sales-chart";
 // settings moved to /admin/settings
@@ -40,7 +39,7 @@ export default async function AdminDashboardPage() {
       const buckets: { label: string; value: number }[] = [];
       const now = new Date();
       for (let i = 5; i >= 0; i--) { const dt = new Date(now.getFullYear(), now.getMonth() - i, 1); buckets.push({ label: monthLabel(dt), value: 0 }); }
-      for (const o of orders) { const dt = new Date(o.placed_at || o.createdAt || Date.now()); const bucket = buckets.find((b) => b.label === monthLabel(dt)); if (bucket) bucket.value += Number(o.total_inr ?? 0); }
+      for (const o of orders) { const dt = new Date(o.placed_at || o.createdAt || now.getTime()); const bucket = buckets.find((b) => b.label === monthLabel(dt)); if (bucket) bucket.value += Number(o.total_inr ?? 0); }
       sales = buckets;
     } catch {}
   } else {

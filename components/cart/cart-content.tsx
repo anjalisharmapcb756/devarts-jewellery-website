@@ -65,7 +65,7 @@ function EditCartModal({
       <div className="w-full max-w-2xl bg-surface p-6 sm:p-8">
         <div className="flex items-start justify-between gap-4">
           <div>
-            <p className="text-xs tracking-[0.2em] text-accent-strong uppercase">Edit Customization</p>
+            <p className="text-xs tracking-[0.2em] text-accent-text uppercase">Edit Customization</p>
             <h2 className="mt-2 font-display text-3xl text-foreground">{p.name}</h2>
           </div>
           <button type="button" onClick={onClose} className="text-sm text-muted hover:text-foreground">Close</button>
@@ -170,7 +170,7 @@ export function CartContent({ products = mockProducts }: { products?: Product[] 
                 <div className="flex flex-col gap-4 sm:flex-row sm:justify-between">
                   <div>
                     <p className="text-xs tracking-[0.18em] text-muted uppercase">{item.product.category}</p>
-                    <Link href={`/products/${item.product.slug}`} className="mt-1 block font-display text-2xl text-foreground hover:text-accent-strong">
+                    <Link href={`/products/${item.product.slug}`} className="mt-1 block font-display text-2xl text-foreground hover:text-accent-text">
                       {item.product.name}
                     </Link>
                     <p className="mt-2 text-sm leading-6 text-muted">{formatSelection(item.selection)}</p>
@@ -198,7 +198,7 @@ export function CartContent({ products = mockProducts }: { products?: Product[] 
         </div>
 
         <aside className="h-fit border border-border bg-surface-muted/30 p-6 lg:sticky lg:top-32">
-          <p className="text-xs font-medium tracking-[0.24em] text-accent-strong uppercase">Order Summary</p>
+          <p className="text-xs font-medium tracking-[0.24em] text-accent-text uppercase">Order Summary</p>
           <div className="mt-6 space-y-4 text-sm">
             <div className="flex justify-between"><span className="text-muted">Subtotal</span><span className="text-foreground">{formatCurrency(subtotal)}</span></div>
             <div className="flex justify-between"><span className="text-muted">Discount</span><span className="text-foreground">{discount > 0 ? `- ${formatCurrency(discount)}` : formatCurrency(0)}</span></div>

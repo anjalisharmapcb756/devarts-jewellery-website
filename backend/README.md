@@ -15,8 +15,10 @@ Secure Node.js/Express backend for Vara admin operations. Uses MongoDB, bcrypt p
    ```
 3. Fill `.env` values (do not commit secrets):
    - `MONGODB_URI`
-   - `ADMIN_JWT_SECRET` (long random string, >=16 chars)
    - `CORS_ORIGINS` (comma-separated allowed frontend origins)
+   - `FRONTEND_URL` (absolute frontend origin used for reset links)
+   - `AUTH_SECRET` (customer JWT secret, >=16 chars)
+   - `ADMIN_JWT_SECRET` (admin JWT secret, >=16 chars, different from `AUTH_SECRET`)
    - `SEED_ADMIN_EMAIL`, `SEED_ADMIN_PASSWORD` (used only by seed script)
 
 4. Create the first admin (secure seed script; no public registration route):

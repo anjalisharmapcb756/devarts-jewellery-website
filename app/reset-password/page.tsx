@@ -2,10 +2,11 @@
 import { Suspense } from "react";
 import { AuthShell } from "@/components/auth/auth-shell";
 import { ResetPasswordForm } from "@/components/auth/reset-password-form";
+import { noIndex } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = { title: "Reset Password" };
+export const metadata: Metadata = { title: "Reset Password", robots: noIndex };
 
 export default function ResetPasswordPage() {
   return (

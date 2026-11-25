@@ -88,7 +88,7 @@ export function Catalogue({
     <section className="py-16 sm:py-24">
       <Container>
         <div className="max-w-3xl">
-          <p className="text-xs font-medium tracking-[0.32em] text-accent-strong uppercase">Catalogue</p>
+          <p className="text-xs font-medium tracking-[0.32em] text-accent-text uppercase">Catalogue</p>
           <h1 className="mt-4 font-display text-4xl tracking-tight text-foreground sm:text-5xl">{title}</h1>
           <p className="mt-4 text-base leading-7 text-muted">{description}</p>
         </div>

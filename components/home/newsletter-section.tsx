@@ -1,19 +1,7 @@
-"use client";
-
-import { useState, type FormEvent } from "react";
+import { NewsletterForm } from "@/components/newsletter/newsletter-form";
 import { Container } from "@/components/ui/container";
 
 export function NewsletterSection() {
-  const [email, setEmail] = useState("");
-  const [submitted, setSubmitted] = useState(false);
-
-  const onSubmit = (event: FormEvent<HTMLFormElement>) => {
-    event.preventDefault();
-    if (!email.trim()) return;
-    setSubmitted(true);
-    setEmail("");
-  };
-
   return (
     <section className="py-20 sm:py-28">
       <Container>
@@ -28,34 +16,7 @@ export function NewsletterSection() {
             Receive early access to new collections, private offers, and stories
             from our atelier.
           </p>
-          <form
-            onSubmit={onSubmit}
-            className="mx-auto mt-10 flex max-w-xl flex-col gap-4 sm:flex-row"
-          >
-            <label htmlFor="newsletter-email" className="sr-only">
-              Email address
-            </label>
-            <input
-              id="newsletter-email"
-              type="email"
-              required
-              value={email}
-              onChange={(e) => setEmail(e.target.value)}
-              placeholder="Enter your email address"
-              className="w-full border border-accent/30 bg-transparent px-5 py-4 text-sm text-[#F8F5F0] outline-none placeholder:text-[#D9D2C7]/70 focus:border-accent"
-            />
-            <button
-              type="submit"
-              className="bg-accent px-8 py-4 text-xs font-medium tracking-[0.22em] text-white uppercase transition duration-200 hover:bg-accent-strong"
-            >
-              Subscribe
-            </button>
-          </form>
-          {submitted ? (
-            <p className="mt-4 text-sm text-accent">
-              Thank you for subscribing. Welcome to Vara.
-            </p>
-          ) : null}
+          <NewsletterForm />
         </div>
       </Container>
     </section>

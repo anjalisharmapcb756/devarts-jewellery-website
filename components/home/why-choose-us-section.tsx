@@ -36,7 +36,7 @@ export function WhyChooseUsSection() {
         <div className="mt-14 grid gap-px bg-border/70 sm:grid-cols-2 xl:grid-cols-4">
           {values.map((value, index) => (
             <div key={value.title} className="bg-surface px-8 py-10">
-              <p className="text-xs font-medium tracking-[0.24em] text-accent-strong uppercase">
+              <p className="text-xs font-medium tracking-[0.24em] text-accent-text uppercase">
                 0{index + 1}
               </p>
               <h3 className="mt-5 font-display text-2xl tracking-tight text-foreground">

@@ -48,7 +48,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
           <Image src={product.image} alt={product.name} fill sizes="(min-width: 768px) 50vw, 100vw" className="object-cover" />
         </div>
         <div className="p-8 sm:p-10">
-          <p className="text-xs font-medium tracking-[0.24em] text-accent-strong uppercase">{product.category}</p>
+          <p className="text-xs font-medium tracking-[0.24em] text-accent-text uppercase">{product.category}</p>
           <h2 className="mt-4 font-display text-3xl tracking-tight text-foreground sm:text-4xl">{product.name}</h2>
           <div className="mt-4 flex items-center gap-3">
             <span className="text-lg text-foreground">{formatCurrency(product.price)}</span>
@@ -56,7 +56,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
               <span className="text-sm text-muted line-through">{formatCurrency(product.originalPrice)}</span>
             ) : null}
             {discount > 0 ? (
-              <span className="text-xs tracking-[0.14em] text-accent-strong uppercase">{discount}% Off</span>
+              <span className="text-xs tracking-[0.14em] text-accent-text uppercase">{discount}% Off</span>
             ) : null}
           </div>
           <p className="mt-6 text-sm leading-7 text-muted">{product.description}</p>
@@ -83,7 +83,7 @@ export function QuickViewModal({ product, onClose }: QuickViewModalProps) {
               {wished ? "Wishlisted" : "Wishlist"}
             </button>
           </div>
-          <Link href={`/products/${product.slug}`} className="mt-6 inline-block text-sm tracking-wide text-accent-strong underline underline-offset-4 transition hover:text-foreground">
+          <Link href={`/products/${product.slug}`} className="mt-6 inline-block text-sm tracking-wide text-accent-text underline underline-offset-4 transition hover:text-foreground">
             View Full Details
           </Link>
         </div>

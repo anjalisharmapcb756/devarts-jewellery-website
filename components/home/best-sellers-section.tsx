@@ -1,9 +1,11 @@
+import { connection } from "next/server";
 import { Container } from "@/components/ui/container";
 import { SectionHeading } from "@/components/ui/section-heading";
 import { ProductCard } from "@/components/products/product-card";
 import { getProductsAsync } from "@/lib/data/products-db";
 
 export async function BestSellersSection() {
+  await connection();
   const products = await getProductsAsync();
   const bestSellers = products.filter((p) => p.badge === "Bestseller" || (p.rating ?? 0) >= 4.8).slice(0, 4);
   return (

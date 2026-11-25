@@ -2,28 +2,45 @@
 import { jwtVerify } from "jose";
 
 const COOKIE = "vara-session";
+const TOKEN_ISSUER = "vara-root";
+const TOKEN_AUDIENCE = "vara-root-app";
+const TOKEN_TYPE = "vara-session";
 
-function getAuthSecret() {
-  const secret = process.env.AUTH_SECRET || process.env.MONGODB_URI;
-  if (secret) return secret;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Missing AUTH_SECRET (or MONGODB_URI fallback) in production.");
+function getAuthSecret(): Uint8Array {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.length < 16) {
+    throw new Error("Missing or invalid AUTH_SECRET. Set a secret of at least 16 characters.");
   }
-  return "dev-secret-change-me";
+  return new TextEncoder().encode(secret);
 }
 
-const secret = new TextEncoder().encode(getAuthSecret());
+type RootSession = { role?: string; typ?: string };
 
-async function getSession(req: NextRequest) {
+async function getSession(req: NextRequest): Promise<RootSession | null> {
   const token = req.cookies.get(COOKIE)?.value;
   if (!token) return null;
-  try { const { payload } = await jwtVerify(token, secret); return payload as any; } catch { return null; }
+  try {
+    const { payload } = await jwtVerify(token, getAuthSecret(), {
+      issuer: TOKEN_ISSUER,
+      audience: TOKEN_AUDIENCE,
+    });
+    if (payload.typ !== TOKEN_TYPE) return null;
+    return payload as RootSession;
+  } catch {
+    return null;
+  }
 }
 
 export async function updateSession(request: NextRequest) {
   const response = NextResponse.next({ request });
   const pathname = request.nextUrl.pathname;
-  const session = await getSession(request);
+  let session: RootSession | null = null;
+
+  try {
+    session = await getSession(request);
+  } catch {
+    // Misconfiguration is surfaced by route handlers; middleware fails closed.
+  }
 
   const protectedPaths = ["/account", "/checkout", "/order-confirmation"];
   const isProtected = protectedPaths.some((p) => pathname === p || pathname.startsWith(`${p}/`));

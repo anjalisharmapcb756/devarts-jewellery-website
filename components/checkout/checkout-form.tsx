@@ -5,7 +5,7 @@ import Link from "next/link";
 import { useRouter } from "next/navigation";
 import { useStore } from "@/components/store/store-provider";
 import { formatCurrency } from "@/lib/utils";
-import { formatSelection } from "@/lib/pricing";
+import { formatSelection, getUnitPrice } from "@/lib/pricing";
 import type { Product } from "@/types/product";
 
 declare global { interface Window { Razorpay?: any } }
@@ -16,7 +16,14 @@ const emptyAddress: Address = { fullName: "", phone: "", line1: "", line2: "", c
 function loadRazorpay() {
   return new Promise<boolean>((resolve) => {
     if (window.Razorpay) return resolve(true);
+    const existing = document.querySelector<HTMLScriptElement>('script[data-razorpay="true"]');
+    if (existing) {
+      existing.addEventListener("load", () => resolve(true), { once: true });
+      existing.addEventListener("error", () => resolve(false), { once: true });
+      return;
+    }
     const s = document.createElement("script");
+    s.dataset.razorpay = "true";
     s.src = "https://checkout.razorpay.com/v1/checkout.js";
     s.onload = () => resolve(true);
     s.onerror = () => resolve(false);
@@ -31,7 +38,7 @@ function Field({ label, children }: { label: string; children: React.ReactNode }
 
 export function CheckoutForm({ products, initialEmail = "" }: { products: Product[]; initialEmail?: string }) {
   const router = useRouter();
-  const { cart, isLoaded, clearCart } = useStore();
+  const { cart, isLoaded, clearCart, removeFromCart } = useStore();
   const [email, setEmail] = useState(initialEmail);
   const [phone, setPhone] = useState("");
   const [shipping, setShipping] = useState<Address>(emptyAddress);
@@ -40,28 +47,45 @@ export function CheckoutForm({ products, initialEmail = "" }: { products: Produc
   const [couponCode, setCouponCode] = useState("");
   const [appliedCoupon, setAppliedCoupon] = useState<string | null>(null);
   const [quote, setQuote] = useState<any>(null);
+  const [quoteError, setQuoteError] = useState<string | null>(null);
+  const [unavailableProductId, setUnavailableProductId] = useState<string | null>(null);
   const [quoteLoading, setQuoteLoading] = useState(false);
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [success, setSuccess] = useState<string | null>(null);
 
-  const items = useMemo(() => cart.map((c) => {
-    const p = products.find((x) => x.id === c.productId);
-    return p ? { ...c, product: p } : null;
-  }).filter(Boolean) as any[], [cart, products]);
+  const items = useMemo(() => cart.flatMap((c) => {
+    const p = products.find((x) => x.id === c.productId || x.slug === c.productId);
+    if (!p || p.inStock === false) return [];
+    return [{
+      ...c,
+      productId: p.id,
+      unitPrice: getUnitPrice(p, c.selection),
+      product: p,
+    }];
+  }), [cart, products]);
 
-  const payloadItems = useMemo(() => cart.map((c) => ({ productId: c.productId, quantity: c.quantity, selection: c.selection })), [cart]);
+  const payloadItems = useMemo(
+    () => items.map((item) => ({ productId: item.productId, quantity: item.quantity, selection: item.selection })),
+    [items],
+  );
 
   async function refreshQuote(coupon?: string | null) {
-    if (!payloadItems.length) { setQuote(null); return; }
+    if (!payloadItems.length) { setQuote(null); setQuoteError(null); setUnavailableProductId(null); return; }
     setQuoteLoading(true);
+    setQuoteError(null);
+    setUnavailableProductId(null);
     try {
       const res = await fetch("/api/checkout/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: payloadItems, couponCode: coupon ?? appliedCoupon }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Unable to calculate total");
       setQuote(data.quote);
     } catch (e: any) {
+      const message = String(e?.message || "Unable to calculate total.");
       setQuote(null);
+      setQuoteError(message);
+      const lower = message.toLowerCase();
+      setUnavailableProductId(products.find((p) => lower.includes(p.name.toLowerCase()))?.id ?? null);
     } finally { setQuoteLoading(false); }
   }
 
@@ -77,6 +101,8 @@ export function CheckoutForm({ products, initialEmail = "" }: { products: Produc
       if (!b.fullName || !b.line1 || !b.city || !b.state || !b.postalCode || !b.phone) return "Complete billing address is required.";
     }
     if (!items.length) return "Your cart is empty.";
+    if (quoteError) return quoteError;
+    if (!quote) return "Order summary is not ready yet.";
     return null;
   }
 
@@ -89,8 +115,11 @@ export function CheckoutForm({ products, initialEmail = "" }: { products: Produc
       const res = await fetch("/api/checkout/quote", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: payloadItems, couponCode: code }) });
       const data = await res.json();
       if (!res.ok) throw new Error(data.error || "Invalid coupon");
-      setQuote(data.quote); setAppliedCoupon(code); setSuccess(`Coupon ${code} applied.`); setTimeout(() => setSuccess(null), 2500);
-    } catch (e: any) { setError(e.message); }
+      setQuote(data.quote); setAppliedCoupon(code); setQuoteError(null); setSuccess(`Coupon ${code} applied.`); setTimeout(() => setSuccess(null), 2500);
+    } catch (e: any) {
+      setError(e.message);
+      setQuoteError(e.message || "Invalid coupon.");
+    }
     finally { setQuoteLoading(false); }
   }
 
@@ -217,7 +246,7 @@ export function CheckoutForm({ products, initialEmail = "" }: { products: Produc
       </div>
 
       <aside className="h-fit border border-border bg-surface-muted/30 p-6 lg:sticky lg:top-32">
-        <p className="text-xs font-medium tracking-[0.24em] text-accent-strong uppercase">Order Summary</p>
+        <p className="text-xs font-medium tracking-[0.24em] text-accent-text uppercase">Order Summary</p>
         <div className="mt-6 space-y-4">
           {items.map((item: any) => (
             <div key={item.key} className="flex justify-between gap-4 border-b border-border pb-4 text-sm">
@@ -227,13 +256,31 @@ export function CheckoutForm({ products, initialEmail = "" }: { products: Produc
           ))}
         </div>
 
+        {quoteError && (
+          <div role="alert" className="mt-4 border border-[#8a4b4b]/40 bg-[#8a4b4b]/5 p-4 text-sm text-[#8a4b4b]">
+            <p>{quoteError}</p>
+            {unavailableProductId && (
+              <button
+                type="button"
+                onClick={() => {
+                  const item = cart.find((c) => c.productId === unavailableProductId);
+                  if (item) removeFromCart(item.key);
+                }}
+                className="mt-3 underline"
+              >
+                Remove unavailable item
+              </button>
+            )}
+          </div>
+        )}
+
         <div className="mt-6 space-y-3">
           <label className="block text-xs tracking-[0.16em] text-muted uppercase">Coupon Code</label>
           <div className="flex gap-2">
             <input className={inputCls} value={couponCode} onChange={(e) => setCouponCode(e.target.value)} placeholder="Enter coupon" />
             <button type="button" onClick={applyCoupon} disabled={quoteLoading} className="border border-border px-4 py-2 text-xs tracking-[0.14em] uppercase hover:border-accent disabled:opacity-50">Apply</button>
           </div>
-          {appliedCoupon ? <p className="text-xs text-accent-strong">Applied: {appliedCoupon}</p> : null}
+          {appliedCoupon ? <p className="text-xs text-accent-text">Applied: {appliedCoupon}</p> : null}
         </div>
 
         <div className="mt-6 space-y-3 text-sm">

@@ -1,4 +1,5 @@
-﻿import { connectDB } from "@/lib/mongodb";
+﻿import crypto from "crypto";
+import { connectDB } from "@/lib/mongodb";
 import { Coupon } from "@/lib/models/Payment";
 import { Product as ProductModel } from "@/lib/models/Product";
 import { getProductsAsync } from "@/lib/data/products-db";
@@ -76,6 +77,6 @@ export function generateOrderNumber() {
   const y = now.getFullYear().toString().slice(-2);
   const m = String(now.getMonth() + 1).padStart(2, "0");
   const d = String(now.getDate()).padStart(2, "0");
-  const rand = Math.random().toString(36).toUpperCase().slice(2, 8);
+  const rand = crypto.randomBytes(4).toString("hex").toUpperCase().slice(0, 6);
   return `VARA-${y}${m}${d}-${rand}`;
 }

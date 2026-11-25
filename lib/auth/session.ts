@@ -2,26 +2,41 @@
 import { cookies } from "next/headers";
 
 const COOKIE = "vara-session";
+const TOKEN_ISSUER = "vara-root";
+const TOKEN_AUDIENCE = "vara-root-app";
+const TOKEN_TYPE = "vara-session";
 
-function getAuthSecret() {
-  const secret = process.env.AUTH_SECRET || process.env.MONGODB_URI;
-  if (secret) return secret;
-  if (process.env.NODE_ENV === "production") {
-    throw new Error("Missing AUTH_SECRET (or MONGODB_URI fallback) in production.");
+function getAuthSecret(): Uint8Array {
+  const secret = process.env.AUTH_SECRET;
+  if (!secret || secret.length < 16) {
+    throw new Error("Missing or invalid AUTH_SECRET. Set a secret of at least 16 characters.");
   }
-  return "dev-secret-change-me";
+  return new TextEncoder().encode(secret);
 }
-
-const secret = new TextEncoder().encode(getAuthSecret());
 
 export type SessionPayload = { sub: string; email: string; role: "customer" | "admin"; name?: string };
 
 export async function createSessionToken(payload: SessionPayload) {
-  return new SignJWT(payload).setProtectedHeader({ alg: "HS256" }).setIssuedAt().setExpirationTime("7d").sign(secret);
+  return new SignJWT({ ...payload, typ: TOKEN_TYPE })
+    .setProtectedHeader({ alg: "HS256" })
+    .setIssuedAt()
+    .setIssuer(TOKEN_ISSUER)
+    .setAudience(TOKEN_AUDIENCE)
+    .setExpirationTime("7d")
+    .sign(getAuthSecret());
 }
 
-export async function verifySessionToken(token: string) {
-  try { const { payload } = await jwtVerify(token, secret); return payload as unknown as SessionPayload; } catch { return null; }
+export async function verifySessionToken(token: string): Promise<SessionPayload | null> {
+  try {
+    const { payload } = await jwtVerify(token, getAuthSecret(), {
+      issuer: TOKEN_ISSUER,
+      audience: TOKEN_AUDIENCE,
+    });
+    if (payload.typ !== TOKEN_TYPE) return null;
+    return payload as unknown as SessionPayload;
+  } catch {
+    return null;
+  }
 }
 
 export async function getSession() {
@@ -33,12 +48,24 @@ export async function getSession() {
 
 export async function setSessionCookie(token: string) {
   const store = await cookies();
-  store.set(COOKIE, token, { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 60 * 60 * 24 * 7 });
+  store.set(COOKIE, token, {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 60 * 60 * 24 * 7,
+  });
 }
 
 export async function clearSessionCookie() {
   const store = await cookies();
-  store.set(COOKIE, "", { httpOnly: true, sameSite: "lax", secure: process.env.NODE_ENV === "production", path: "/", maxAge: 0 });
+  store.set(COOKIE, "", {
+    httpOnly: true,
+    sameSite: "lax",
+    secure: process.env.NODE_ENV === "production",
+    path: "/",
+    maxAge: 0,
+  });
 }
 
 export { COOKIE as SESSION_COOKIE };

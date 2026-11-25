@@ -1,15 +1,18 @@
-import { useEffect, useState } from "react";
+import { useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { apiFetch } from "../lib/api";
 import { formatPrice } from "../lib/pricing";
+import { useStore } from "../context/StoreContext";
+import { mergeCatalogue, productFallback } from "../data/catalogue";
 
 export default function Search() {
   const [params, setParams] = useSearchParams();
   const q = params.get("q") || "";
   const [query, setQuery] = useState(q);
-  const [products, setProducts] = useState([]);
-  useEffect(() => { apiFetch("/products").then((d) => setProducts(d?.products || [])).catch(() => {}); }, []);
-  const filtered = q ? products.filter((p) => `${p.name} ${p.category} ${p.gemstone} ${p.metal}`.toLowerCase().includes(q.toLowerCase())) : products;
+  const { products } = useStore();
+  const catalog = mergeCatalogue(products || []);
+  const filtered = q
+    ? catalog.filter((p) => `${p.name} ${p.category} ${p.gemstone} ${p.metal}`.toLowerCase().includes(q.toLowerCase()))
+    : catalog;
   return (
     <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
       <h1 className="font-display text-5xl">Search</h1>
@@ -20,7 +23,7 @@ export default function Search() {
       <div className="mt-8 grid gap-6 sm:grid-cols-2 lg:grid-cols-4">
         {filtered.map((p) => (
           <Link key={p.id} to={`/products/${p.slug}`} className="block">
-            <div className="aspect-[3/4] overflow-hidden bg-surface-muted"><img src={p.image} alt={p.name} className="h-full w-full object-cover" /></div>
+            <div className="aspect-[3/4] overflow-hidden bg-surface-muted"><img src={p.image} alt={p.name} className="h-full w-full object-cover" loading="lazy" onError={(e) => { e.currentTarget.onerror = null; e.currentTarget.src = productFallback(p.id); }} /></div>
             <div className="mt-3 text-sm">{p.name}</div><div className="text-sm text-muted">{formatPrice(p.price)}</div>
           </Link>
         ))}

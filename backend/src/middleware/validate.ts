@@ -11,7 +11,7 @@ export const validate = (schema: { body?: ZodSchema; query?: ZodSchema; params?:
       next();
     } catch (err) {
       if (err instanceof ZodError) {
-        return next(new ApiError(400, "Validation failed", err.flatten()));
+        return next(new ApiError(400, "Validation failed", { code: "VALIDATION_ERROR", details: err.flatten() }));
       }
       next(err);
     }

@@ -1,6 +1,5 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link, useSearchParams } from "react-router-dom";
-import { apiFetch } from "../lib/api";
 import { formatPrice } from "../lib/pricing";
 import { useStore } from "../context/StoreContext";
 import { CATEGORIES, GEMSTONE_OPTIONS, METAL_OPTIONS, PRICE_OPTIONS, mergeCatalogue, productFallback } from "../data/catalogue";
@@ -59,25 +58,22 @@ function ProductCard({ p, wished, onWish }) {
   );
 }
 
-export default function Products() {
+export default function Products({ categorySlug, collectionSlug, mode } = {}) {
   const [params, setParams] = useSearchParams();
-  const [products, setProducts] = useState([]);
-  const [loading, setLoading] = useState(true);
   const [sort, setSort] = useState("best");
   const [mobileFilters, setMobileFilters] = useState(false);
-  const { wishlist, toggleWishlist } = useStore();
+  const { wishlist, toggleWishlist, products, productsLoaded } = useStore();
+  const loading = !productsLoaded;
 
   const selectedCategories = useMemo(() => (params.get("category") ? params.get("category").split(",").filter(Boolean) : []), [params]);
   const selectedGemstones = useMemo(() => (params.get("gemstone") ? params.get("gemstone").split(",").filter(Boolean) : []), [params]);
   const selectedMetals = useMemo(() => (params.get("metal") ? params.get("metal").split(",").filter(Boolean) : []), [params]);
   const selectedPrices = useMemo(() => (params.get("price") ? params.get("price").split(",").filter(Boolean) : []), [params]);
   const q = (params.get("q") || "").trim().toLowerCase();
+  const categoryTerm = String(categorySlug || "").replace(/-/g, " ").trim().toLowerCase();
+  const collectionTerm = String(collectionSlug || "").replace(/-/g, " ").trim().toLowerCase();
 
-  useEffect(() => {
-    apiFetch("/products").then((d) => setProducts(d?.products || [])).catch(() => {}).finally(() => setLoading(false));
-  }, []);
-
-  const catalog = useMemo(() => mergeCatalogue(products), [products]);
+  const catalog = useMemo(() => mergeCatalogue(products || []), [products]);
 
   const toggleParam = (key, value) => {
     const current = (params.get(key) || "").split(",").filter(Boolean);
@@ -95,6 +91,21 @@ export default function Products() {
 
   const filtered = useMemo(() => {
     let list = [...catalog];
+    if (mode === "bestsellers") {
+      const curated = list.filter((p) => /bestseller|loved/i.test(String(p.badge || "")));
+      list = curated.length ? curated : list.slice(0, 12);
+    }
+    if (mode === "new-arrivals") {
+      list = [...list].sort((a, b) => String(b.id).localeCompare(String(a.id))).slice(0, 12);
+    }
+    if (categoryTerm) {
+      list = list.filter((p) => String(p.category || "").toLowerCase() === categoryTerm
+        || String(p.slug || "").toLowerCase() === categoryTerm);
+    }
+    if (collectionTerm) {
+      const terms = collectionTerm.split(" ").filter(Boolean);
+      list = list.filter((p) => terms.some((term) => `${p.name} ${p.category} ${p.style}`.toLowerCase().includes(term)));
+    }
     if (selectedCategories.length) list = list.filter((p) => selectedCategories.includes(p.category));
     if (selectedGemstones.length) list = list.filter((p) => selectedGemstones.includes(p.gemstone));
     if (selectedMetals.length) list = list.filter((p) => selectedMetals.includes(p.metal));
@@ -109,7 +120,7 @@ export default function Products() {
     if (sort === "price-desc") list.sort((a, b) => Number(b.price ?? b.price_inr) - Number(a.price ?? a.price_inr));
     if (sort === "new") list.sort((a, b) => String(b.id).localeCompare(String(a.id)));
     return list;
-  }, [catalog, selectedCategories, selectedGemstones, selectedMetals, selectedPrices, q, sort]);
+  }, [catalog, mode, categoryTerm, collectionTerm, selectedCategories, selectedGemstones, selectedMetals, selectedPrices, q, sort]);
 
   const activeFilters = [
     ...selectedCategories.map((v) => ({ key: "category", v })),

@@ -17,6 +17,9 @@ as $$
   );
 $$;
 
+revoke all on function public.is_admin() from public;
+grant execute on function public.is_admin() to anon, authenticated, service_role;
+
 -- Enable RLS
 alter table public.profiles enable row level security;
 alter table public.categories enable row level security;
@@ -45,10 +48,13 @@ with check (auth.uid() = id or public.is_admin());
 
 drop policy if exists "profiles_insert_own" on public.profiles;
 create policy "profiles_insert_own" on public.profiles
-for insert with check (auth.uid() = id or public.is_admin());
+for insert with check (
+  (auth.uid() = id and coalesce(role, 'customer') = 'customer')
+  or (public.is_admin() and role = 'customer')
+);
 
 -- Prevent customers from escalating role via normal client updates.
--- Admins should change roles using service role / SQL editor.
+-- Admins should change roles using service role / SQL editor only.
 revoke update (role) on public.profiles from authenticated;
 grant update (role) on public.profiles to service_role;
 
@@ -218,5 +224,80 @@ with check (auth.uid() = user_id or public.is_admin());
 drop policy if exists "reviews_owner_delete" on public.reviews;
 create policy "reviews_owner_delete" on public.reviews
 for delete using (auth.uid() = user_id or public.is_admin());
+
+-- Owners must not be able to approve their own reviews.
+revoke update (is_approved) on public.reviews from authenticated;
+grant update (is_approved) on public.reviews to service_role;
+
+-- Database-side guards for fields that must never be client-controlled.
+create or replace function public.enforce_profile_role()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if current_setting('request.jwt.claim.role', true) is distinct from 'service_role' then
+    if tg_op = 'INSERT' and coalesce(new.role, 'customer') <> 'customer' then
+      raise exception 'Role assignment requires service role';
+    end if;
+    if tg_op = 'UPDATE' and new.role is distinct from old.role then
+      raise exception 'Role changes require service role';
+    end if;
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists enforce_profile_role on public.profiles;
+create trigger enforce_profile_role
+before insert or update on public.profiles
+for each row execute function public.enforce_profile_role();
+
+create or replace function public.enforce_order_status()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if tg_op = 'INSERT'
+    and current_setting('request.jwt.claim.role', true) is distinct from 'service_role'
+    and (coalesce(new.status, 'pending') <> 'pending' or coalesce(new.payment_status, 'pending') <> 'pending') then
+    raise exception 'Orders must start in pending status';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists enforce_order_status on public.orders;
+create trigger enforce_order_status
+before insert on public.orders
+for each row execute function public.enforce_order_status();
+
+create or replace function public.enforce_review_approval()
+returns trigger
+language plpgsql
+security definer
+set search_path = public
+as $$
+begin
+  if current_setting('request.jwt.claim.role', true) is distinct from 'service_role'
+    and (tg_op = 'INSERT' and coalesce(new.is_approved, false) is true
+      or tg_op = 'UPDATE' and new.is_approved is distinct from old.is_approved) then
+    raise exception 'Review approval requires service role';
+  end if;
+  return new;
+end;
+$$;
+
+drop trigger if exists enforce_review_approval on public.reviews;
+create trigger enforce_review_approval
+before insert or update on public.reviews
+for each row execute function public.enforce_review_approval();
+
+revoke all on function public.enforce_profile_role() from public;
+revoke all on function public.enforce_order_status() from public;
+revoke all on function public.enforce_review_approval() from public;
 
 commit;

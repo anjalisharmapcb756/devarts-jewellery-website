@@ -19,15 +19,15 @@ export function SectionHeading({
   return (
     <div className={`max-w-3xl ${alignment} ${className}`.trim()}>
       {eyebrow ? (
-        <p className="text-xs font-medium tracking-[0.32em] text-accent-strong uppercase">
+        <p className="text-eyebrow font-medium tracking-eyebrow text-accent-text uppercase">
           {eyebrow}
         </p>
       ) : null}
-      <h2 className="mt-4 font-display text-3xl tracking-tight text-foreground sm:text-4xl lg:text-5xl">
+      <h2 className="mt-4 font-display text-section tracking-display text-foreground">
         {title}
       </h2>
       {description ? (
-        <p className="mt-4 text-base leading-7 text-muted sm:text-lg">
+        <p className="mt-4 text-body text-muted sm:text-body-lg">
           {description}
         </p>
       ) : null}

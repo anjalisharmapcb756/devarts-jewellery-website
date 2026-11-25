@@ -1,6 +1,7 @@
 import type { MetadataRoute } from "next";
+import { getSiteUrl } from "@/lib/site-url";
 
-const siteUrl = process.env.NEXT_PUBLIC_SITE_URL || "https://vara.example.com";
+const siteUrl = getSiteUrl();
 
 export default function robots(): MetadataRoute.Robots {
   return {
@@ -8,7 +9,18 @@ export default function robots(): MetadataRoute.Robots {
       {
         userAgent: "*",
         allow: "/",
-        disallow: ["/admin/", "/api/", "/account/", "/checkout/", "/order-confirmation/", "/auth/"],
+        disallow: [
+          "/admin",
+          "/account",
+          "/checkout",
+          "/order-confirmation",
+          "/api",
+          "/auth",
+          "/login",
+          "/register",
+          "/forgot-password",
+          "/reset-password",
+        ],
       },
     ],
     sitemap: `${siteUrl}/sitemap.xml`,

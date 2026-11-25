@@ -13,7 +13,10 @@ const subscribeSchema = z.object({
 router.post("/subscribe", asyncHandler(async (req, res) => {
   const parsed = subscribeSchema.safeParse(req.body || {});
   if (!parsed.success) {
-    throw new ApiError(400, parsed.error.issues[0]?.message || "Enter a valid email address.");
+    throw new ApiError(400, parsed.error.issues[0]?.message || "Enter a valid email address.", {
+      code: "VALIDATION_ERROR",
+      details: parsed.error.flatten(),
+    });
   }
 
   const email = parsed.data.email.toLowerCase();

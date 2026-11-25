@@ -27,8 +27,13 @@ export default function AdminProducts() {
 
   const save = async (e) => {
     e.preventDefault(); setErr(""); setMsg("");
+    const price = Number(form.price);
+    const stock = Number(form.stock_quantity);
+    if (!String(form.name || "").trim()) { setErr("Product name is required."); return; }
+    if (!Number.isFinite(price) || price <= 0) { setErr("Enter a valid price greater than zero."); return; }
+    if (!Number.isInteger(stock) || stock < 0) { setErr("Enter a valid whole-number stock quantity."); return; }
     try {
-      const payload = { ...form, price_inr: Number(form.price), stock_quantity: Number(form.stock_quantity), category_id: form.category_id || undefined };
+      const payload = { ...form, price_inr: price, stock_quantity: stock, category_id: form.category_id || undefined };
       if (editing) await apiFetch(`/admin/products/${editing}`, { method: "PUT", body: JSON.stringify(payload) });
       else await apiFetch("/admin/products", { method: "POST", body: JSON.stringify(payload) });
       setForm(blank); setEditing(null); setMsg("Product saved."); load();

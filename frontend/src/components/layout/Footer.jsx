@@ -1,5 +1,7 @@
 import { Link } from "react-router-dom";
 
+const CURRENT_YEAR = new Date().getFullYear();
+
 export default function Footer() {
   return (
     <footer className="border-t border-border bg-surface-muted">
@@ -32,7 +34,7 @@ export default function Footer() {
           </div>
         </div>
       </div>
-      <div className="border-t border-border px-4 py-4 text-center text-xs text-muted">© {new Date().getFullYear()} Vara. All rights reserved.</div>
+      <div className="border-t border-border px-4 py-4 text-center text-xs text-muted">© {CURRENT_YEAR} Vara. All rights reserved.</div>
     </footer>
   );
 }

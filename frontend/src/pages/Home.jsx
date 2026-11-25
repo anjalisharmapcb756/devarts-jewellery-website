@@ -1,4 +1,4 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo, useState } from "react";
 import { Link } from "react-router-dom";
 import { apiFetch } from "../lib/api";
 import { formatPrice } from "../lib/pricing";
@@ -66,8 +66,13 @@ function ProductCard({ p, onAdd }) {
           {p.discount && <span className="bg-[#292521] px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-white">{p.discount}</span>}
           {p.outOfStock && <span className="bg-white/95 px-2 py-1 text-[10px] uppercase tracking-[0.14em] text-muted">Out of Stock</span>}
         </div>
-        <button onClick={(e) => { e.preventDefault(); onAdd(p); }} className="absolute inset-x-3 bottom-3 bg-white/95 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-foreground opacity-0 transition group-hover:opacity-100 hover:bg-white">
-          Add to Bag
+        <button
+          type="button"
+          disabled={p?.is_in_stock === false || p?.outOfStock || Number(p?.stock_quantity) === 0}
+          onClick={(e) => { e.preventDefault(); onAdd(p); }}
+          className="absolute inset-x-3 bottom-3 bg-white/95 px-4 py-3 text-[11px] uppercase tracking-[0.16em] text-foreground opacity-0 transition group-hover:opacity-100 hover:bg-white disabled:cursor-not-allowed disabled:text-muted"
+        >
+          {p?.is_in_stock === false || p?.outOfStock || Number(p?.stock_quantity) === 0 ? "Out of Stock" : "Add to Bag"}
         </button>
       </Link>
       <div className="mt-4">
@@ -83,19 +88,20 @@ function ProductCard({ p, onAdd }) {
 }
 
 export default function Home() {
-  const [products, setProducts] = useState([]);
   const [galleryActive, setGalleryActive] = useState(null);
   const [subscribeEmail, setSubscribeEmail] = useState("");
   const [subscribeStatus, setSubscribeStatus] = useState({ loading: false, ok: false, message: "" });
-  const { addToCart } = useStore();
-  useEffect(() => { apiFetch("/products").then((d) => setProducts(d?.products || [])).catch(() => {}); }, []);
+  const { addToCart, products } = useStore();
 
-  const catalog = useMemo(() => mergeCatalogue(products), [products]);
+  const catalog = useMemo(() => mergeCatalogue(products || []), [products]);
   const featured = fallbackProducts.map((fp) => catalog.find((p) => String(p.id || p.slug) === String(fp.id)) || fp);
   const bestSellers = featured.slice(0, 4);
   const newArrivals = catalog.slice(-4).reverse();
 
-  const onAdd = (p) => addToCart({ productId: p.id, quantity: 1, unitPrice: p.price, selection: { metal: p.metal || "Yellow Gold", gemstone: p.gemstone || "Diamond", gemstoneSize: p.gemstoneSizes?.[0] || "1.00 ct" } });
+  const onAdd = (p) => {
+    if (p?.is_in_stock === false || p?.outOfStock || Number(p?.stock_quantity) === 0) return;
+    addToCart({ productId: p.id, quantity: 1 });
+  };
 
   async function onSubscribe(e) {
     e.preventDefault();

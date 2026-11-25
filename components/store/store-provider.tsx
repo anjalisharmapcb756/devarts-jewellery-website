@@ -16,10 +16,12 @@ import type { CartItem, CartItemSelection, Gemstone, MetalType, Product } from "
 
 const CART_KEY = "vara-cart";
 const WISHLIST_KEY = "vara-wishlist";
+const MAX_QUANTITY = 20;
 
 export type AddToCartInput = {
   productId: string;
   quantity?: number;
+  /** Kept for API compatibility. Prices are always derived from live product data. */
   unitPrice?: number;
   selection?: Partial<CartItemSelection>;
 };
@@ -49,8 +51,11 @@ function isRingCategory(category?: string) {
   return category === "Rings" || category === "Engagement Rings";
 }
 
-function defaultSelection(productId: string, products: Product[]): CartItemSelection {
-  const product = products.find((p) => p.id === productId);
+function findProduct(products: Product[], productId: string) {
+  return products.find((p) => p.id === productId || p.slug === productId);
+}
+
+function defaultSelection(product: Product | undefined): CartItemSelection {
   const metal = (product?.metal ?? "Yellow Gold") as MetalType;
   const gemstone = (product?.gemstone ?? "Diamond") as Gemstone;
   const gemstoneSize = product?.gemstoneSizes?.[0] ?? "1.00 ct";
@@ -60,10 +65,8 @@ function defaultSelection(productId: string, products: Product[]): CartItemSelec
   return { metal, gemstone, gemstoneSize, ...(ringSize ? { ringSize } : {}) };
 }
 
-function normalizeSelection(productId: string, selection: Partial<CartItemSelection> | undefined, products: Product[]): CartItemSelection {
-  const base = defaultSelection(productId, products);
-  const merged: CartItemSelection = { ...base, ...selection };
-  const product = products.find((p) => p.id === productId);
+function normalizeSelection(product: Product | undefined, selection: Partial<CartItemSelection> | undefined): CartItemSelection {
+  const merged: CartItemSelection = { ...defaultSelection(product), ...selection };
   if (!isRingCategory(product?.category)) delete merged.ringSize;
   return merged;
 }
@@ -75,18 +78,67 @@ function selectionKey(productId: string, selection: CartItemSelection) {
     .replace(/\s+/g, "-");
 }
 
-function buildCartItem(productId: string, quantity: number, products: Product[], selectionInput?: Partial<CartItemSelection>, unitPriceInput?: number): CartItem | null {
-  const product = products.find((p) => p.id === productId);
-  if (!product) return null;
-  const selection = normalizeSelection(productId, selectionInput, products);
-  const unitPrice = unitPriceInput ?? getUnitPrice(product, selection);
+function clampQuantity(quantity: unknown) {
+  const value = Math.trunc(Number(quantity));
+  return Number.isFinite(value) ? Math.min(MAX_QUANTITY, Math.max(1, value)) : 1;
+}
+
+function buildCartItem(
+  productId: string,
+  quantity: number,
+  products: Product[],
+  selectionInput?: Partial<CartItemSelection>,
+): CartItem | null {
+  const product = findProduct(products, productId);
+  if (!product || product.inStock === false) return null;
+  const selection = normalizeSelection(product, selectionInput);
   return {
-    key: selectionKey(productId, selection),
-    productId,
-    quantity: Math.max(1, quantity),
-    unitPrice,
+    key: selectionKey(product.id, selection),
+    productId: product.id,
+    quantity: clampQuantity(quantity),
+    unitPrice: getUnitPrice(product, selection),
     selection,
   };
+}
+
+function normalizeCartItems(raw: unknown, products: Product[]): CartItem[] {
+  if (!Array.isArray(raw)) return [];
+  const byKey = new Map<string, CartItem>();
+
+  for (const entry of raw) {
+    if (!entry || typeof entry !== "object") continue;
+    const candidate = entry as Partial<CartItem> & { selection?: Partial<CartItemSelection> };
+    if (typeof candidate.productId !== "string") continue;
+    const item = buildCartItem(
+      candidate.productId,
+      candidate.quantity ?? 1,
+      products,
+      candidate.selection,
+    );
+    if (!item) continue;
+
+    const existing = byKey.get(item.key);
+    if (existing) {
+      existing.quantity = Math.min(MAX_QUANTITY, existing.quantity + item.quantity);
+    } else {
+      byKey.set(item.key, item);
+    }
+  }
+
+  return [...byKey.values()];
+}
+
+function normalizeWishlist(raw: unknown, products: Product[]): string[] {
+  if (!Array.isArray(raw)) return [];
+  const ids = new Set<string>();
+  for (const entry of raw) {
+    const id = typeof entry === "string"
+      ? entry
+      : (entry && typeof entry === "object" && "productId" in entry ? String(entry.productId) : "");
+    const product = findProduct(products, id);
+    if (product) ids.add(product.id);
+  }
+  return [...ids];
 }
 
 function safeParse<T>(raw: string | null, fallback: T): T {
@@ -112,79 +164,88 @@ export function StoreProvider({ children, initialProducts }: { children: ReactNo
     const wishlistRaw = window.localStorage.getItem(WISHLIST_KEY) ?? window.localStorage.getItem(legacyWishlist);
     const cartRaw = window.localStorage.getItem(CART_KEY) ?? window.localStorage.getItem(legacyCart);
 
-    if (wishlistRaw === null && cartRaw === null) {
-      const fallback = buildCartItem("p1", 1, products);
-      setWishlist(["p2"]);
-      setCart(fallback ? [fallback] : []);
-      setIsLoaded(true);
-      return;
-    }
-
-    const savedWishlist = safeParse<unknown>(wishlistRaw, []);
-    const savedCart = safeParse<unknown>(cartRaw, []);
-
-    const validWishlist = Array.isArray(savedWishlist)
-      ? savedWishlist.filter((id): id is string => typeof id === "string" && products.some((p) => p.id === id))
-      : [];
-
-    const validCart = Array.isArray(savedCart)
-      ? savedCart
-          .map((item) => {
-            if (!item || typeof item !== "object") return null;
-            const c = item as Partial<CartItem>;
-            if (typeof c.productId !== "string") return null;
-            return buildCartItem(
-              c.productId,
-              typeof c.quantity === "number" ? c.quantity : 1,
-              products,
-              c.selection,
-              typeof c.unitPrice === "number" ? c.unitPrice : undefined,
-            );
-          })
-          .filter((item): item is CartItem => Boolean(item))
-      : [];
-
-    setWishlist(validWishlist);
-    setCart(validCart);
+    setWishlist(normalizeWishlist(safeParse<unknown>(wishlistRaw, []), products));
+    setCart(normalizeCartItems(safeParse<unknown>(cartRaw, []), products));
     setIsLoaded(true);
   }, [products]);
 
   useEffect(() => {
     if (!isLoaded) return;
     window.localStorage.setItem(WISHLIST_KEY, JSON.stringify(wishlist));
-    if (authedRef.current && dbSyncedRef.current) fetch("/api/wishlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: wishlist }) }).catch(() => {});
+    if (authedRef.current && dbSyncedRef.current) {
+      fetch("/api/wishlist", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: wishlist }),
+      }).catch(() => {});
+    }
   }, [wishlist, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded) return;
     window.localStorage.setItem(CART_KEY, JSON.stringify(cart));
-    if (authedRef.current && dbSyncedRef.current) fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: cart }) }).catch(() => {});
+    if (authedRef.current && dbSyncedRef.current) {
+      fetch("/api/cart", {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ items: cart }),
+      }).catch(() => {});
+    }
   }, [cart, isLoaded]);
 
   useEffect(() => {
     if (!isLoaded || dbSyncedRef.current) return;
+    let active = true;
     (async () => {
       try {
         const me = await fetch("/api/auth/me", { cache: "no-store" });
-        if (!me.ok) { dbSyncedRef.current = true; return; }
+        if (!active) return;
+        if (!me.ok) {
+          dbSyncedRef.current = true;
+          return;
+        }
         authedRef.current = true;
-        const [cRes, wRes] = await Promise.all([fetch("/api/cart", { cache: "no-store" }), fetch("/api/wishlist", { cache: "no-store" })]);
+        const [cRes, wRes] = await Promise.all([
+          fetch("/api/cart", { cache: "no-store" }),
+          fetch("/api/wishlist", { cache: "no-store" }),
+        ]);
+        if (!active) return;
+
         if (cRes.ok) {
           const cData = await cRes.json();
-          const dbCart = Array.isArray(cData.items) ? cData.items : [];
-          if (dbCart.length > 0) setCart(dbCart as CartItem[]);
-          else if (cart.length > 0) await fetch("/api/cart", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: cart }) });
+          const dbCart = normalizeCartItems(cData.items, products);
+          if (dbCart.length > 0) setCart(dbCart);
+          else if (cart.length > 0) {
+            await fetch("/api/cart", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ items: cart }),
+            });
+          }
         }
         if (wRes.ok) {
           const wData = await wRes.json();
-          const dbW = Array.isArray(wData.items) ? wData.items : [];
-          if (dbW.length > 0) setWishlist(dbW as string[]);
-          else if (wishlist.length > 0) await fetch("/api/wishlist", { method: "POST", headers: { "Content-Type": "application/json" }, body: JSON.stringify({ items: wishlist }) });
+          const dbWishlist = normalizeWishlist(wData.items, products);
+          if (dbWishlist.length > 0) setWishlist(dbWishlist);
+          else if (wishlist.length > 0) {
+            await fetch("/api/wishlist", {
+              method: "POST",
+              headers: { "Content-Type": "application/json" },
+              body: JSON.stringify({ items: wishlist }),
+            });
+          }
         }
-      } catch {}
-      dbSyncedRef.current = true;
+      } catch {
+        // Offline users keep their local cart and wishlist.
+      } finally {
+        if (active) dbSyncedRef.current = true;
+      }
     })();
-  }, [isLoaded]); // eslint-disable-line react-hooks/exhaustive-deps
+    return () => {
+      active = false;
+    };
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [isLoaded]);
 
   const toggleWishlist = useCallback((id: string) => {
     setWishlist((prev) => (prev.includes(id) ? prev.filter((item) => item !== id) : [...prev, id]));
@@ -197,15 +258,18 @@ export function StoreProvider({ children, initialProducts }: { children: ReactNo
       normalized.quantity ?? 1,
       products,
       normalized.selection,
-      normalized.unitPrice,
     );
     if (!item) return;
+
     setCart((prev) => {
       const existing = prev.find((c) => c.key === item.key);
       if (existing) {
-        return prev.map((c) =>
-          c.key === item.key ? { ...c, quantity: c.quantity + item.quantity, unitPrice: item.unitPrice } : c,
-        );
+        const product = findProduct(products, item.productId);
+        return prev.map((c) => (
+          c.key === item.key
+            ? { ...c, quantity: Math.min(MAX_QUANTITY, c.quantity + item.quantity), unitPrice: item.unitPrice }
+            : c
+        ));
       }
       return [...prev, item];
     });
@@ -216,59 +280,45 @@ export function StoreProvider({ children, initialProducts }: { children: ReactNo
   }, []);
 
   const updateCartQuantity = useCallback((key: string, quantity: number) => {
-    setCart((prev) =>
-      prev
-        .map((item) => (item.key === key ? { ...item, quantity: Math.max(0, quantity) } : item))
-        .filter((item) => item.quantity > 0),
-    );
+    setCart((prev) => prev.map((item) => (
+      item.key === key ? { ...item, quantity: clampQuantity(quantity) } : item
+    )));
   }, []);
 
   const updateCartItem = useCallback((key: string, updates: UpdateCartItemInput) => {
     setCart((prev) => {
       const existing = prev.find((item) => item.key === key);
       if (!existing) return prev;
-      const nextQuantity = Math.max(1, updates.quantity ?? existing.quantity);
-      const nextSelection = normalizeSelection(existing.productId, { ...existing.selection, ...updates.selection }, products);
+      const product = findProduct(products, existing.productId);
+      const nextSelection = normalizeSelection(product, { ...existing.selection, ...updates.selection });
       const nextKey = selectionKey(existing.productId, nextSelection);
-      const product = products.find((p) => p.id === existing.productId);
-      const nextUnitPrice = product ? getUnitPrice(product, nextSelection) : existing.unitPrice;
-      const updated: CartItem = {
-        ...existing,
-        key: nextKey,
-        quantity: nextQuantity,
-        selection: nextSelection,
-        unitPrice: nextUnitPrice,
-      };
+      const updated = buildCartItem(
+        existing.productId,
+        updates.quantity ?? existing.quantity,
+        products,
+        nextSelection,
+      );
+      if (!updated) return prev.filter((item) => item.key !== key);
 
       const withoutCurrent = prev.filter((item) => item.key !== key);
       const duplicate = withoutCurrent.find((item) => item.key === nextKey);
       if (duplicate) {
-        return withoutCurrent.map((item) =>
+        return withoutCurrent.map((item) => (
           item.key === nextKey
-            ? { ...item, quantity: item.quantity + updated.quantity, unitPrice: updated.unitPrice }
-            : item,
-        );
+            ? { ...item, quantity: clampQuantity(item.quantity + updated.quantity), unitPrice: updated.unitPrice }
+            : item
+        ));
       }
-      return prev.map((item) => (item.key === key ? updated : item));
+      return [...withoutCurrent, updated];
     });
   }, [products]);
 
   const moveWishlistToCart = useCallback((productId: string) => {
-    const item = buildCartItem(productId, 1, products);
-    if (!item) return;
-    setCart((prev) => {
-      const existing = prev.find((c) => c.key === item.key);
-      if (existing) {
-        return prev.map((c) => (c.key === item.key ? { ...c, quantity: c.quantity + 1 } : c));
-      }
-      return [...prev, item];
-    });
+    addToCart({ productId, quantity: 1 });
     setWishlist((prev) => prev.filter((id) => id !== productId));
-  }, [products]);
+  }, [addToCart]);
 
-  const clearCart = useCallback(() => {
-    setCart([]);
-  }, []);
+  const clearCart = useCallback(() => setCart([]), []);
 
   const value = useMemo<StoreContextValue>(
     () => ({

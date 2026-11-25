@@ -1,11 +1,12 @@
-import type { Metadata } from "next";
 import { Catalogue } from "@/components/products/catalogue";
 import { getProductsAsync } from "@/lib/data/products-db";
+import { publicMetadata } from "@/lib/seo";
 
-export const metadata: Metadata = {
+export const metadata = publicMetadata({
   title: "Engagement Rings",
   description: "Celebrate your promise with engagement rings designed to last forever.",
-};
+  path: "/products/engagement-rings",
+});
 
 export const instant = false;
 

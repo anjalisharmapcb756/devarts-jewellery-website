@@ -6,13 +6,17 @@ const AuthContext = createContext(null);
 export function AuthProvider({ children }) {
   const [user, setUser] = useState(null);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
 
   const refresh = useCallback(async () => {
+    setError("");
     try {
       const data = await apiFetch("/auth/me");
       setUser(data?.user || null);
-    } catch {
-      setUser(null);
+    } catch (err) {
+      // Only auth failures mean the session is gone; transient errors keep it.
+      if ([401, 403].includes(err?.status)) setUser(null);
+      else setError(err?.message || "We could not verify your session.");
     } finally {
       setLoading(false);
     }
@@ -38,7 +42,7 @@ export function AuthProvider({ children }) {
   };
 
   return (
-    <AuthContext.Provider value={{ user, loading, login, register, logout, refresh, isAuthenticated: !!user }}>
+    <AuthContext.Provider value={{ user, loading, error, login, register, logout, refresh, isAuthenticated: !!user }}>
       {children}
     </AuthContext.Provider>
   );

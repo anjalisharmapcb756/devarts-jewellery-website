@@ -1,7 +1,7 @@
-import { useEffect, useMemo, useState } from "react";
+import { useMemo } from "react";
 import { Link } from "react-router-dom";
-import { apiFetch } from "../lib/api";
 import { formatPrice } from "../lib/pricing";
+import { useStore } from "../context/StoreContext";
 import { CATALOGUE, mergeCatalogue, productFallback } from "../data/catalogue";
 
 const categoryDefs = [
@@ -51,9 +51,8 @@ function Section({ eyebrow, title, text, children }) {
 }
 
 export default function Collections() {
-  const [products, setProducts] = useState([]);
-  useEffect(() => { apiFetch("/products").then((d) => setProducts(d?.products || [])).catch(() => {}); }, []);
-  const catalog = useMemo(() => mergeCatalogue(products), [products]);
+  const { products } = useStore();
+  const catalog = useMemo(() => mergeCatalogue(products || []), [products]);
 
   return (
     <div>

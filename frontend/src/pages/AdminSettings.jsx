@@ -6,7 +6,7 @@ export default function AdminSettings() {
   const [settings, setSettings] = useState({ siteName: "Vara", currency: "INR" });
   const [msg, setMsg] = useState("");
   const [err, setErr] = useState("");
-  useEffect(() => { apiFetch("/admin/settings").then((d) => setSettings(d || settings)).catch(() => {}); }, []);
+  useEffect(() => { apiFetch("/admin/settings").then((d) => setSettings(d || { siteName: "Vara", currency: "INR" })).catch(() => {}); }, []);
   const save = async (e) => { e.preventDefault(); setErr(""); setMsg(""); try { await apiFetch("/admin/settings", { method: "PUT", body: JSON.stringify(settings) }); setMsg("Settings saved."); } catch (e2) { setErr(e2.message); } };
   return (
     <div className="mx-auto max-w-3xl px-4 py-10 sm:px-6">

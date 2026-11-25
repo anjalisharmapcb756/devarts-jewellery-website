@@ -1,4 +1,4 @@
-﻿import type { Metadata } from "next";
+import type { Metadata } from "next";
 import Link from "next/link";
 import { notFound, redirect } from "next/navigation";
 import { connection } from "next/server";
@@ -8,10 +8,11 @@ import { getSession } from "@/lib/auth/session";
 import { connectDB } from "@/lib/mongodb";
 import { Order, OrderItem } from "@/lib/models/Order";
 import { formatCurrency } from "@/lib/utils";
+import { noIndex } from "@/lib/seo";
 
 export const instant = false;
 
-export const metadata: Metadata = { title: "Order Confirmation" };
+export const metadata: Metadata = { title: "Order Confirmation", robots: noIndex };
 type Props = { params: Promise<{ id: string }> };
 
 async function OrderConfirmationContent({ params }: Props) {
@@ -54,7 +55,7 @@ async function OrderConfirmationContent({ params }: Props) {
         </div>
         <div className="border border-border bg-surface p-6">
           <h2 className="font-display text-2xl text-foreground">Shipping Address</h2>
-          {addr ? <p className="mt-4 text-sm leading-7 text-muted">{addr.fullName}<br />{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}<br />{addr.city}, {addr.state} {addr.postalCode}<br />{addr.country || "India"}<br />{addr.phone}</p> : <p className="mt-4 text-sm text-muted">—</p>}
+          {addr ? <p className="mt-4 text-sm leading-7 text-muted">{addr.fullName}<br />{addr.line1}{addr.line2 ? `, ${addr.line2}` : ""}<br />{addr.city}, {addr.state} {addr.postalCode}<br />{addr.country || "India"}<br />{addr.phone}</p> : <p className="mt-4 text-sm text-muted">�</p>}
         </div>
       </div>
       <aside className="h-fit border border-border bg-surface-muted/30 p-6">
@@ -78,7 +79,7 @@ export default function OrderConfirmationPage({ params }: Props) {
   return (
     <section className="py-16 sm:py-24">
       <Container>
-        <p className="text-sm font-medium tracking-[0.25em] text-accent-strong uppercase">Order Confirmed</p>
+        <p className="text-sm font-medium tracking-[0.25em] text-accent-text uppercase">Order Confirmed</p>
         <h1 className="mt-4 font-display text-4xl tracking-tight text-foreground sm:text-5xl">Thank you for your order</h1>
         <p className="mt-4 text-base text-muted">Your order has been received and is being processed.</p>
         <Suspense fallback={<div className="mt-10 border border-border bg-surface-muted/30 p-10 text-center text-sm text-muted">Loading order...</div>}>

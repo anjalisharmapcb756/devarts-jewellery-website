@@ -1,5 +1,5 @@
 import { useEffect, useState } from "react";
-import { useNavigate, useParams } from "react-router-dom";
+import { Link, useNavigate, useParams } from "react-router-dom";
 import { apiFetch } from "../lib/api";
 import { formatPrice } from "../lib/pricing";
 import { useStore } from "../context/StoreContext";
@@ -8,9 +8,10 @@ import { CATALOGUE, METAL_OPTIONS, mergeCatalogue, productFallback } from "../da
 export default function ProductDetail() {
   const { slug } = useParams();
   const navigate = useNavigate();
-  const fallback = CATALOGUE.find((p) => p.slug === slug) || CATALOGUE.find((p) => p.id === slug) || CATALOGUE[0];
+  const fallback = CATALOGUE.find((p) => p.slug === slug) || CATALOGUE.find((p) => p.id === slug) || null;
   const [product, setProduct] = useState(fallback);
   const [loading, setLoading] = useState(true);
+  const [error, setError] = useState("");
   const [qty, setQty] = useState(1);
   const [metal, setMetal] = useState(fallback?.metal || METAL_OPTIONS[0]);
   const [size, setSize] = useState(fallback?.sizes?.[0] || "");
@@ -19,9 +20,13 @@ export default function ProductDetail() {
 
   useEffect(() => {
     setLoading(true);
+    setError("");
     apiFetch(`/products/${slug}`)
       .then((d) => setProduct(d?.product ? mergeCatalogue([d.product])[0] : fallback))
-      .catch(() => setProduct(fallback))
+      .catch((err) => {
+        setProduct(fallback);
+        setError(err?.status === 404 ? "" : "We could not load this product. Please try again.");
+      })
       .finally(() => setLoading(false));
   }, [slug]);
 
@@ -33,13 +38,35 @@ export default function ProductDetail() {
   }, [product]);
 
   if (loading) return <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 text-muted">Loading...</div>;
-  if (!product) return <div className="mx-auto max-w-7xl px-4 py-12 sm:px-6 text-muted">Product not found.</div>;
+  if (!product) {
+    return (
+      <div className="mx-auto max-w-7xl px-4 py-16 sm:px-6">
+        <h1 className="font-display text-4xl">Product not found</h1>
+        <p className="mt-3 text-muted">This piece is no longer available. <Link to="/products" className="text-accent hover:underline">Browse the collection</Link>.</p>
+      </div>
+    );
+  }
 
-  const wished = wishlist.some((w) => (typeof w === "string" ? w === product.id : (w?.id || w?.productId) === product.id));
-  const cartItem = { productId: product.id, quantity: qty, unitPrice: product.price ?? product.price_inr, selection: { metal, gemstone: product.gemstone, size } };
+  const wished = wishlist.some((w) => String(typeof w === "string" ? w : w?.id ?? w?.productId ?? w?.slug) === String(product.id));
+  const isRing = /ring/i.test(product.category || "");
+  const selection = {
+    metal,
+    gemstone: product.gemstone || "Diamond",
+    gemstoneSize: product.gemstoneSizes?.[0] || product.sizes?.[0] || "1.00 ct",
+    ...(isRing ? { ringSize: size || "US 7" } : {}),
+  };
+  const cartItem = { productId: product.id, quantity: qty, selection };
+  const soldOut = product.is_in_stock === false || product.isInStock === false || Number(product.stock_quantity ?? product.stock ?? 1) === 0;
 
-  const handleAdd = () => { addToCart(cartItem); setAdded(true); setTimeout(() => setAdded(false), 1500); };
-  const handleBuyNow = () => { addToCart(cartItem); navigate("/checkout"); };
+  const handleAdd = () => {
+    if (!addToCart(cartItem)) return;
+    setAdded(true);
+    setTimeout(() => setAdded(false), 1500);
+  };
+  const handleBuyNow = () => {
+    if (!addToCart(cartItem)) return;
+    navigate("/checkout");
+  };
 
   return (
     <div className="mx-auto max-w-7xl px-4 py-10 sm:px-6">
@@ -52,6 +79,8 @@ export default function ProductDetail() {
           <h1 className="mt-2 font-display text-4xl sm:text-5xl">{product.name}</h1>
           <p className="mt-4 text-2xl">{formatPrice(product.price ?? product.price_inr)}</p>
           <p className="mt-1 text-sm text-muted">Inclusive of all taxes</p>
+          {error && <p role="alert" className="mt-3 text-sm text-[#8a4b4b]">{error}</p>}
+          {soldOut && <p role="status" className="mt-3 text-sm text-[#8a4b4b]">Currently out of stock.</p>}
           <p className="mt-6 leading-7 text-muted">{product.description}</p>
 
           <div className="mt-8 space-y-5">
@@ -72,8 +101,8 @@ export default function ProductDetail() {
           </div>
 
           <div className="mt-8 flex flex-col sm:flex-row gap-3">
-            <button onClick={handleBuyNow} className="flex-1 bg-foreground px-8 py-3.5 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-accent transition">Buy Now</button>
-            <button onClick={handleAdd} className="flex-1 border border-foreground px-8 py-3.5 text-[11px] uppercase tracking-[0.18em] hover:bg-foreground hover:text-white transition">{added ? "Added to Cart" : "Add to Cart"}</button>
+            <button disabled={soldOut} onClick={handleBuyNow} className="flex-1 bg-foreground px-8 py-3.5 text-[11px] uppercase tracking-[0.18em] text-white hover:bg-accent transition disabled:cursor-not-allowed disabled:opacity-50">Buy Now</button>
+            <button disabled={soldOut} onClick={handleAdd} className="flex-1 border border-foreground px-8 py-3.5 text-[11px] uppercase tracking-[0.18em] hover:bg-foreground hover:text-white transition disabled:cursor-not-allowed disabled:opacity-50">{added ? "Added to Cart" : soldOut ? "Out of Stock" : "Add to Cart"}</button>
             <button onClick={() => toggleWishlist(product.id)} className="border border-border px-5 py-3.5 text-[11px] uppercase tracking-[0.18em] hover:border-accent hover:text-accent transition">{wished ? "Wishlisted" : "Wishlist"}</button>
           </div>
 

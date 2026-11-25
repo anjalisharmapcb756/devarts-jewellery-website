@@ -54,7 +54,8 @@ export function HeroSection() {
                   src={img.src}
                   alt={img.alt}
                   fill
-                  priority={i === 0}
+                  loading={i === 0 ? "eager" : "lazy"}
+                  fetchPriority={i === 0 ? "high" : undefined}
                   sizes="(max-width: 640px) 100vw, (max-width: 1024px) 90vw, 52vw"
                   className={`object-contain object-center p-3 transition-opacity duration-700 sm:p-4 md:p-5 ${i === active ? "opacity-100" : "opacity-0"}`}
                 />

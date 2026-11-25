@@ -4,31 +4,114 @@
 @source "../app";
 @source "../hooks";
 @source "../types";
-@source inline("-ml-2 absolute accent-accent active activeTab align-top animate-pulse antialiased aspect-[3/4] aspect-[4/5] aspect-square backdrop-blur backdrop-blur-sm bg-[#292521] bg-[#292521]/35 bg-[#292521]/45 bg-[#292521]/90 bg-[#332e29] bg-[#a88755] bg-[#efe7da] bg-[#f3ede4] bg-[#f5faf3] bg-[#f6f3ee] bg-[#fdf7f7] bg-[#fdfbf8]/90 bg-[#fff8ec] bg-[#fffdfa] bg-accent bg-background bg-black/35 bg-border/70 bg-foreground bg-gradient-to-b bg-gradient-to-t bg-surface bg-surface-muted bg-surface-muted/30 bg-surface-muted/40 bg-surface-muted/45 bg-surface/90 bg-surface/92 bg-surface/95 bg-surface/98 bg-transparent bg-white bg-white/95 block border border-[#3a3631] border-[#b8c9b0] border-[#c9a3a3] border-[#d8c7a7] border-[#ddd5ca] border-[#e3ddd4] border-[#eee8df] border-accent border-accent/30 border-accent/60 border-b border-border border-border/60 border-border/70 border-foreground border-foreground/20 border-t border-white/15 border-white/20 border-y bottom-0 bottom-4 capitalize cursor-pointer decoration-accent/70 disabled:cursor-not-allowed disabled:opacity-40 disabled:opacity-45 disabled:opacity-50 duration-200 duration-300 duration-700 ease-out fill-accent fill-transparent fixed flex flex-1 flex-col flex-wrap focus-within:opacity-100 focus-within:translate-y-0 focus:border-[#a88755] focus:border-accent font-display font-medium font-sans from-[#292521]/55 from-[#292521]/60 gap-1 gap-10 gap-12 gap-2 gap-3 gap-4 gap-5 gap-6 gap-8 gap-px gap-x-5 gap-x-6 gap-x-8 gap-y-12 gap-y-2 gap-y-4 grid grid-cols-2 grid-cols-5 grid-cols-6 group group-focus-within:opacity-100 group-focus-within:visible group-hover/feature:scale-[1.03] group-hover:opacity-100 group-hover:scale-[1.03] group-hover:scale-[1.04] group-hover:scale-[1.05] group-hover:translate-y-0 group-hover:visible group/feature h-10 h-12 h-20 h-24 h-4 h-44 h-5 h-64 h-[121px] h-fit h-full hidden hover:-translate-y-1 hover:bg-[#332f2a] hover:bg-accent hover:bg-accent-strong hover:bg-foreground hover:bg-surface hover:bg-surface-muted hover:bg-transparent hover:border-[#a88755] hover:border-accent hover:ring-border hover:text-[#292521] hover:text-[#2b2620] hover:text-[#6b3030] hover:text-[#8a7453] hover:text-accent hover:text-accent-strong hover:text-background hover:text-foreground hover:text-white index inline-block inline-flex inset-0 inset-x-0 inset-x-4 inset-y-0 invisible items-center items-end items-start justify-between justify-center justify-end key leading-6 leading-7 leading-8 leading-[0.95] leading-tight left-0 left-4 lg:block lg:border-b-0 lg:border-r lg:col-span-2 lg:fixed lg:gap-16 lg:grid-cols-2 lg:grid-cols-3 lg:grid-cols-5 lg:grid-cols-[1.15fr_2fr_1.1fr] lg:grid-cols-[1fr_1fr] lg:grid-cols-[1fr_1fr_320px] lg:grid-cols-[1fr_360px] lg:grid-cols-[1fr_400px] lg:grid-cols-[280px_1fr] lg:hidden lg:inline lg:inset-y-0 lg:justify-self-end lg:left-0 lg:min-h-[88vh] lg:pl-72 lg:pl-8 lg:self-start lg:sticky lg:text-5xl lg:text-7xl lg:top-32 lg:w-72 line-through max-h-[90vh] max-w-2xl max-w-3xl max-w-5xl max-w-7xl max-w-md max-w-sm max-w-xl mb-2 mb-4 mb-8 md:block md:col-span-2 md:flex md:grid-cols-2 md:grid-cols-3 md:hidden md:min-h-[560px] md:w-40 min-h-[320px] min-h-[78vh] min-h-full min-h-screen min-w-4 min-w-[52px] min-w-full mt-1 mt-10 mt-12 mt-14 mt-16 mt-2 mt-3 mt-4 mt-5 mt-6 mt-7 mt-8 mx-auto object-center object-cover opacity-0 opacity-100 outline-none overflow-auto overflow-hidden overflow-x-auto p-10 p-2 p-4 p-5 p-6 p-7 p-8 pb-12 pb-4 pb-5 pb-6 placeholder:text-[#D9D2C7]/70 placeholder:text-muted/70 placeholder:text-white/40 pointer-events-none pr-4 pt-2 pt-3 pt-4 pt-5 pt-6 pt-7 pt-8 px-1 px-10 px-2 px-3 px-4 px-5 px-6 px-8 py-1 py-10 py-12 py-14 py-16 py-2 py-2.5 py-20 py-24 py-3 py-4 py-5 py-6 py-7 py-8 relative right-0 right-4 ring-1 ring-transparent rounded-[2rem] rounded-full sm:block sm:col-span-2 sm:flex-row sm:gap-4 sm:grid-cols-2 sm:grid-cols-3 sm:grid-cols-[140px_1fr] sm:items-center sm:items-end sm:justify-between sm:p-10 sm:p-8 sm:px-12 sm:px-2 sm:px-8 sm:py-10 sm:py-16 sm:py-20 sm:py-24 sm:py-28 sm:text-4xl sm:text-5xl sm:text-6xl sm:text-lg sm:text-right space-y-1 space-y-2 space-y-3 space-y-4 space-y-5 space-y-6 space-y-8 sr-only sticky stroke-accent stroke-border tab.key text-2xl text-3xl text-4xl text-5xl text-[#292521] text-[#2b2620] text-[#3f5a36] text-[#5f564c] text-[#6b5631] text-[#6e6861] text-[#7a3d3d] text-[#7b736a] text-[#7d6742] text-[#8a4b4b] text-[#8a7453] text-[#D9D2C7] text-[#F8F5F0] text-[#a89f95] text-[#c9b28a] text-[#d8d2ca] text-[#efe4cf] text-[#efe7dc] text-[10px] text-[11px] text-[13px] text-accent text-accent-strong text-background text-base text-border text-center text-foreground text-foreground/90 text-left text-lg text-muted text-right text-sm text-surface text-white text-white/50 text-white/65 text-white/70 text-white/80 text-white/85 text-white/90 text-xl text-xs to-transparent top-0 top-4 top-full tracking-[0.04em] tracking-[0.06em] tracking-[0.08em] tracking-[0.12em] tracking-[0.14em] tracking-[0.16em] tracking-[0.18em] tracking-[0.1em] tracking-[0.22em] tracking-[0.24em] tracking-[0.25em] tracking-[0.28em] tracking-[0.2em] tracking-[0.32em] tracking-[0.35em] tracking-tight tracking-wide transition transition-all transition-colors translate-y-2 truncate underline underline-offset-4 underline-offset-8 uppercase via-[#292521]/10 via-[#292521]/5 w-10 w-12 w-14 w-24 w-3/4 w-4 w-5 w-auto w-full whitespace-nowrap xl:grid-cols-3 xl:grid-cols-4 xl:grid-cols-[1.4fr_1fr] xl:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_360px] z-10 z-40 z-50 z-[100] z-[120] z-[60] z-[70]");
+@source inline("-ml-2 absolute accent-accent active activeTab align-top animate-pulse antialiased aspect-[3/4] aspect-[4/5] aspect-square backdrop-blur backdrop-blur-sm bg-[#292521] bg-[#292521]/35 bg-[#292521]/45 bg-[#292521]/90 bg-[#332e29] bg-[#a88755] bg-[#efe7da] bg-[#f3ede4] bg-[#f5faf3] bg-[#f6f3ee] bg-[#fdf7f7] bg-[#fdfbf8]/90 bg-[#fff8ec] bg-[#fffdfa] bg-accent bg-background bg-black/35 bg-border/70 bg-foreground bg-gradient-to-b bg-gradient-to-t bg-surface bg-surface-muted bg-surface-muted/30 bg-surface-muted/40 bg-surface-muted/45 bg-surface/90 bg-surface/92 bg-surface/95 bg-surface/98 bg-transparent bg-white bg-white/95 block border border-[#3a3631] border-[#b8c9b0] border-[#c9a3a3] border-[#d8c7a7] border-[#ddd5ca] border-[#e3ddd4] border-[#eee8df] border-accent border-accent/30 border-accent/60 border-b border-border border-border/60 border-border/70 border-foreground border-foreground/20 border-t border-white/15 border-white/20 border-y bottom-0 bottom-4 capitalize cursor-pointer decoration-accent/70 disabled:cursor-not-allowed disabled:opacity-40 disabled:opacity-45 disabled:opacity-50 duration-200 duration-300 duration-700 ease-out fill-accent fill-transparent fixed flex flex-1 flex-col flex-wrap focus-within:opacity-100 focus-within:translate-y-0 focus:border-[#a88755] focus:border-accent font-display font-medium font-sans from-[#292521]/55 from-[#292521]/60 gap-1 gap-10 gap-12 gap-2 gap-3 gap-4 gap-5 gap-6 gap-8 gap-px gap-x-5 gap-x-6 gap-x-8 gap-y-12 gap-y-2 gap-y-4 grid grid-cols-2 grid-cols-5 grid-cols-6 group group-focus-within:opacity-100 group-focus-within:visible group-hover/feature:scale-[1.03] group-hover:opacity-100 group-hover:scale-[1.03] group-hover:scale-[1.04] group-hover:scale-[1.05] group-hover:translate-y-0 group-hover:visible group/feature h-10 h-12 h-20 h-24 h-4 h-44 h-5 h-64 h-[121px] h-fit h-full hidden hover:-translate-y-1 hover:bg-[#332f2a] hover:bg-accent hover:bg-accent-strong hover:bg-foreground hover:bg-surface hover:bg-surface-muted hover:bg-transparent hover:border-[#a88755] hover:border-accent hover:ring-border hover:text-[#292521] hover:text-[#2b2620] hover:text-[#6b3030] hover:text-[#8a7453] hover:text-accent hover:text-accent-strong hover:text-background hover:text-foreground hover:text-white index inline-block inline-flex inset-0 inset-x-0 inset-x-4 inset-y-0 invisible items-center items-end items-start justify-between justify-center justify-end key leading-6 leading-7 leading-8 leading-[0.95] leading-tight left-0 left-4 lg:block lg:border-b-0 lg:border-r lg:col-span-2 lg:fixed lg:gap-16 lg:grid-cols-2 lg:grid-cols-3 lg:grid-cols-5 lg:grid-cols-[1.15fr_2fr_1.1fr] lg:grid-cols-[1fr_1fr] lg:grid-cols-[1fr_1fr_320px] lg:grid-cols-[1fr_360px] lg:grid-cols-[1fr_400px] lg:grid-cols-[280px_1fr] lg:hidden lg:inline lg:inset-y-0 lg:justify-self-end lg:left-0 lg:min-h-[88vh] lg:pl-72 lg:pl-8 lg:self-start lg:sticky lg:text-5xl lg:text-7xl lg:top-32 lg:w-72 line-through max-h-[90vh] max-w-2xl max-w-3xl max-w-5xl max-w-7xl max-w-md max-w-sm max-w-xl mb-2 mb-4 mb-8 md:block md:col-span-2 md:flex md:grid-cols-2 md:grid-cols-3 md:hidden md:min-h-[560px] md:w-40 min-h-[320px] min-h-[78vh] min-h-full min-h-screen min-w-4 min-w-[52px] min-w-full mt-1 mt-10 mt-12 mt-14 mt-16 mt-2 mt-3 mt-4 mt-5 mt-6 mt-7 mt-8 mx-auto object-center object-cover opacity-0 opacity-100 outline-none overflow-auto overflow-hidden overflow-x-auto p-10 p-2 p-4 p-5 p-6 p-7 p-8 pb-12 pb-4 pb-5 pb-6 placeholder:text-[#D9D2C7]/70 placeholder:text-muted/70 placeholder:text-white/40 pointer-events-none pr-4 pt-2 pt-3 pt-4 pt-5 pt-6 pt-7 pt-8 px-1 px-10 px-2 px-3 px-4 px-5 px-6 px-8 py-1 py-10 py-12 py-14 py-16 py-2 py-2.5 py-20 py-24 py-3 py-4 py-5 py-6 py-7 py-8 relative right-0 right-4 ring-1 ring-transparent rounded-[2rem] rounded-full sm:block sm:col-span-2 sm:flex-row sm:gap-4 sm:grid-cols-2 sm:grid-cols-3 sm:grid-cols-[140px_1fr] sm:items-center sm:items-end sm:justify-between sm:p-10 sm:p-8 sm:px-12 sm:px-2 sm:px-8 sm:py-10 sm:py-16 sm:py-20 sm:py-24 sm:py-28 sm:text-4xl sm:text-5xl sm:text-6xl sm:text-lg sm:text-right space-y-1 space-y-2 space-y-3 space-y-4 space-y-5 space-y-6 space-y-8 sr-only sticky stroke-accent stroke-border tab.key text-2xl text-3xl text-4xl text-5xl text-[#292521] text-[#2b2620] text-[#3f5a36] text-[#5f564c] text-[#6b5631] text-[#6e6861] text-[#7a3d3d] text-[#7b736a] text-[#7d6742] text-[#8a4b4b] text-[#8a7453] text-[#D9D2C7] text-[#F8F5F0] text-[#a89f95] text-[#c9b28a] text-[#d8d2ca] text-[#efe4cf] text-[#efe7dc] text-[10px] text-[11px] text-[13px] text-accent text-accent-strong text-background text-base text-border text-center text-foreground text-foreground/90 text-left text-lg text-muted text-right text-sm text-surface text-white text-white/50 text-white/65 text-white/70 text-white/80 text-white/85 text-white/90 text-xl text-xs to-transparent top-0 top-4 top-full tracking-[0.04em] tracking-[0.06em] tracking-[0.08em] tracking-[0.12em] tracking-[0.14em] tracking-[0.16em] tracking-[0.18em] tracking-[0.1em] tracking-[0.22em] tracking-[0.24em] tracking-[0.25em] tracking-[0.28em] tracking-[0.2em] tracking-[0.32em] tracking-[0.35em] tracking-tight tracking-wide transition transition-all transition-colors translate-y-2 truncate underline underline-offset-4 underline-offset-8 uppercase via-[#292521]/10 via-[#292521]/5 w-10 w-12 w-14 w-24 w-3/4 w-4 w-5 w-auto w-full whitespace-nowrap xl:grid-cols-3 xl:grid-cols-4 xl:grid-cols-[1.4fr_1fr] xl:grid-cols-[1fr_1fr] xl:grid-cols-[1fr_360px] z-10 z-40 z-50 z-[100] z-[120] z-[60] z-[70] animate-spin aria-[invalid=true]:border-danger appearance-none bg-accent/10 bg-background-secondary bg-danger bg-danger/10 bg-focus bg-on-dark bg-overlay bg-success bg-success/10 border-background-secondary border-current border-danger border-danger/30 border-focus border-on-dark border-success border-success/30 border-t-transparent duration-[var(--duration-base)] duration-[var(--duration-fast)] duration-[var(--duration-reveal)] duration-[var(--duration-slow)] ease-luxury fill-accent-strong focus-visible:outline focus-visible:outline-2 focus-visible:outline-focus focus-visible:outline-offset-2 focus-within:border-accent-strong h-[var(--button-height-lg)] h-[var(--button-height-md)] h-[var(--button-height-sm)] h-11 h-3.5 h-9 max-h-[90vh] max-w-2xl max-w-copy max-w-md max-w-page max-w-wide md:focus-within:opacity-100 md:focus-within:translate-y-0 md:group-hover:opacity-100 md:group-hover:translate-y-0 md:opacity-0 md:translate-y-2 min-h-28 mt-0.5 outline-none p-card px-[var(--button-padding-lg)] px-[var(--button-padding-md)] px-[var(--button-padding-sm)] px-gutter placeholder:text-muted py-section py-section-lg pr-10 right-3 rounded-card rounded-control rounded-full rounded-pill shadow-card shadow-raised shadow-overlay stroke-accent-strong text-accent-text text-body text-body-lg text-body-sm text-caption text-card-title text-danger text-display text-display-sm text-eyebrow text-focus text-on-dark text-section text-success top-1/2 tracking-display tracking-eyebrow tracking-label w-11 w-3.5 w-9 z-[var(--z-header)] z-[var(--z-modal)] z-[var(--z-overlay)] z-[var(--z-toast)] disabled:transition-none -translate-y-1/2 -right-1 -top-1 -translate-y-2 -translate-y-full font-semibold gap-1 grid-cols-[1fr_auto_1fr] group/feature h-8 h-16 h-[160px] lg:col-span-1 lg:col-span-2 lg:grid-cols-5 lg:grid-cols-[1fr_1fr_280px] mb-8 min-w-4 mt-12 placeholder:text-on-dark/50 pointer-events-auto px-2.5 py-1.5 rotate-180 sm:col-span-2 space-y-2 space-y-8 text-white/45 text-white/80 transition-[transform,box-shadow] w-14");
 
 :root {
-  /* Luxury palette */
-  --background: #ffffff;
-  --foreground: #292521;
-  --surface: #ffffff;
-  --surface-muted: #f8f5f0;
-  --accent: #a88755;
-  --accent-strong: #8f7246;
-  --border: #e9e3da;
-  --muted: #6f685f;
+  /* Auréa palette — brand values */
+  --background: #f8f6f1;
+  --background-secondary: #f1ede5;
+  --surface: #fffdf9;
+  --surface-muted: #f1ede5;
+  --foreground: #29251f;
+  --muted: #777168;
+  --accent: #b89b62;
+  --accent-strong: #7a6238;
+  --accent-text: #6f5a32;
+  --border: #e7e0d5;
+
+  /* Semantic states */
+  --danger: #8a4b4b;
+  --success: #4f7258;
+  --focus: #7a6238;
+  --on-dark: #fffdf9;
+  --overlay: rgb(41 37 31 / 0.55);
 }
 
 @theme inline {
+  /* Colour utilities */
   --color-background: var(--background);
-  --color-foreground: var(--foreground);
+  --color-background-secondary: var(--background-secondary);
   --color-surface: var(--surface);
   --color-surface-muted: var(--surface-muted);
+  --color-foreground: var(--foreground);
+  --color-muted: var(--muted);
   --color-accent: var(--accent);
   --color-accent-strong: var(--accent-strong);
+  --color-accent-text: var(--accent-text);
   --color-border: var(--border);
-  --color-muted: var(--muted);
+  --color-danger: var(--danger);
+  --color-success: var(--success);
+  --color-focus: var(--focus);
+  --color-on-dark: var(--on-dark);
+  --color-overlay: var(--overlay);
+
+  /* Typography utilities */
   --font-sans: var(--font-inter);
   --font-display: var(--font-cormorant-garamond);
+  --text-eyebrow: 0.6875rem;
+  --text-eyebrow--line-height: 1.2;
+  --text-caption: 0.75rem;
+  --text-caption--line-height: 1.4;
+  --text-body-sm: 0.875rem;
+  --text-body-sm--line-height: 1.6;
+  --text-body: 1rem;
+  --text-body--line-height: 1.7;
+  --text-body-lg: 1.125rem;
+  --text-body-lg--line-height: 1.75;
+  --text-card-title: 1.5rem;
+  --text-card-title--line-height: 1.2;
+  --text-section: 2.25rem;
+  --text-section--line-height: 1.15;
+  --text-display-sm: 3rem;
+  --text-display-sm--line-height: 1.05;
+  --text-display: 4.5rem;
+  --text-display--line-height: 0.98;
+  --tracking-eyebrow: 0.24em;
+  --tracking-label: 0.16em;
+  --tracking-display: -0.025em;
+
+  /* Spacing utilities */
+  --spacing-gutter: 1.5rem;
+  --spacing-card: 1.25rem;
+  --spacing-section: 5rem;
+  --spacing-section-lg: 7.5rem;
+
+  /* Shape and elevation utilities */
+  --radius-control: 0.125rem;
+  --radius-card: 0.125rem;
+  --radius-pill: 999px;
+  --shadow-card: 0 1px 2px rgb(41 37 31 / 0.04);
+  --shadow-raised: 0 12px 30px -18px rgb(41 37 31 / 0.35);
+  --shadow-overlay: 0 24px 60px -24px rgb(41 37 31 / 0.45);
+
+  /* Layout utilities */
+  --container-page: 80rem;
+  --container-wide: 88rem;
+  --container-copy: 48rem;
+  --breakpoint-tablet: 48rem;
+  --breakpoint-desktop: 64rem;
+  --breakpoint-wide: 80rem;
+
+  /* Control utilities */
+  --button-height-sm: 2.25rem;
+  --button-height-md: 2.75rem;
+  --button-height-lg: 3.25rem;
+  --button-padding-sm: 0.75rem;
+  --button-padding-md: 1.25rem;
+  --button-padding-lg: 1.75rem;
+
+  /* Motion utilities */
+  --duration-fast: 150ms;
+  --duration-base: 220ms;
+  --duration-slow: 420ms;
+  --duration-reveal: 700ms;
+  --ease-luxury: cubic-bezier(0.22, 1, 0.36, 1);
+
+  /* Stacking utilities */
+  --z-header: 50;
+  --z-overlay: 60;
+  --z-modal: 70;
+  --z-toast: 80;
 }
 
 @layer base {
@@ -40,6 +123,11 @@
 
   html {
     scroll-behavior: smooth;
+  }
+
+  :where(a, button, input, select, textarea, summary, [tabindex]):focus-visible {
+    outline: 2px solid var(--focus);
+    outline-offset: 2px;
   }
 
   body {

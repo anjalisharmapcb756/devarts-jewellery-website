@@ -1,3 +1,4 @@
+import { connection } from "next/server";
 import type { Metadata } from "next";
 import { Container } from "@/components/ui/container";
 import { WishlistContent } from "@/components/wishlist/wishlist-content";
@@ -11,11 +12,12 @@ export const metadata: Metadata = {
 export const instant = false;
 
 export default async function WishlistPage() {
+  await connection();
   const products = await getProductsAsync();
   return (
     <section className="py-16 sm:py-24">
       <Container>
-        <p className="text-sm font-medium tracking-[0.25em] text-accent-strong uppercase">
+        <p className="text-sm font-medium tracking-[0.25em] text-accent-text uppercase">
           Saved Favourites
         </p>
         <h1 className="mt-4 font-display text-4xl tracking-tight text-foreground sm:text-5xl">

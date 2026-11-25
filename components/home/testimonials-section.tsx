@@ -15,7 +15,7 @@ export function TestimonialsSection() {
         <div className="mt-14 grid gap-6 lg:grid-cols-3">
           {testimonials.map((testimonial) => (
             <blockquote key={testimonial.name} className="bg-surface p-8 sm:p-10">
-              <div className="flex gap-1 text-accent-strong">
+              <div className="flex gap-1 text-accent-text">
                 {Array.from({ length: testimonial.rating }).map((_, i) => (
                   <StarIcon key={i} className="h-4 w-4" />
                 ))}
